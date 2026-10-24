@@ -1,0 +1,301 @@
+<div class="flex flex-col gap-6">
+  <a
+    routerLink="/panel/vehiculos"
+    class="inline-flex w-fit items-center gap-1 text-sm font-medium text-fg-secondary hover:text-fg"
+  >
+    <app-icono nombre="flecha-izquierda" class="size-4" />
+    Vehículos
+  </a>
+
+  @if (errorCarga(); as mensaje) {
+    <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
+      <p class="font-medium">{{ mensaje }}</p>
+      <a routerLink="/panel/vehiculos" class="boton boton-secundario">Volver al inventario</a>
+    </div>
+  } @else if (!esNuevo() && !actual()) {
+    <p class="py-14 text-center text-fg-muted">Cargando vehículo…</p>
+  } @else {
+    <header class="flex flex-wrap items-center gap-3">
+      @if (actual(); as v) {
+        <h1 class="text-h2">{{ v.marca }} {{ v.modelo }}</h1>
+        <app-estado-badge [estado]="v.estado" [activo]="v.activo" />
+      } @else {
+        <h1 class="text-h2">Nuevo vehículo</h1>
+      }
+    </header>
+
+    @if (aviso(); as mensaje) {
+      <div
+        role="status"
+        class="flex items-center gap-2 rounded-md bg-success-bg px-4 py-3 text-sm text-success"
+      >
+        <app-icono nombre="check" class="size-4" />
+        {{ mensaje }}
+      </div>
+    }
+    @if (error(); as mensaje) {
+      <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+        {{ mensaje }}
+      </div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+      <!-- Datos -->
+      <form
+        [formGroup]="form"
+        (ngSubmit)="guardar()"
+        novalidate
+        class="tarjeta flex flex-col lg:col-span-2"
+      >
+        <div class="flex flex-col gap-1 border-b border-line px-6 py-5">
+          <h2 class="text-h4">Datos del vehículo</h2>
+          @if (!puedeEditar()) {
+            <p class="text-sm text-fg-muted">Solo un administrador puede editar estos datos.</p>
+          }
+        </div>
+
+        <div class="grid gap-5 p-6 sm:grid-cols-2">
+          <div class="flex flex-col gap-2">
+            <label for="marca" class="etiqueta">Marca</label>
+            <select
+              id="marca"
+              formControlName="marcaId"
+              class="campo"
+              [class.campo-invalido]="errorDe('marcaId')"
+              (change)="cambioMarca()"
+            >
+              <option [ngValue]="null" disabled>Elegí una marca</option>
+              @for (m of listaMarcas() ?? []; track m.id) {
+                <option [ngValue]="m.id">{{ m.nombre }}</option>
+              }
+            </select>
+            @if (errorDe('marcaId'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="modelo" class="etiqueta">Modelo</label>
+            <select
+              id="modelo"
+              formControlName="modeloId"
+              class="campo"
+              [class.campo-invalido]="errorDe('modeloId')"
+            >
+              <option [ngValue]="null" disabled>
+                {{ form.controls.marcaId.value ? 'Elegí un modelo' : 'Primero elegí la marca' }}
+              </option>
+              @for (m of listaModelos() ?? []; track m.id) {
+                <option [ngValue]="m.id">{{ m.nombre }} · {{ m.categoriaNombre }}</option>
+              }
+            </select>
+            @if (errorDe('modeloId'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          <fieldset class="flex flex-col gap-2 sm:col-span-2">
+            <legend class="etiqueta pb-2">Condición</legend>
+            <div class="grid grid-cols-2 gap-1 rounded-md bg-subtle p-1 sm:w-72">
+              @for (c of condiciones; track c) {
+                <button
+                  type="button"
+                  class="h-9 rounded-[7px] text-sm font-medium transition disabled:cursor-default"
+                  [class.bg-surface]="form.controls.condicion.value === c"
+                  [class.shadow-sm]="form.controls.condicion.value === c"
+                  [class.text-fg]="form.controls.condicion.value === c"
+                  [class.text-fg-secondary]="form.controls.condicion.value !== c"
+                  [attr.aria-pressed]="form.controls.condicion.value === c"
+                  [disabled]="!puedeEditar()"
+                  (click)="elegirCondicion(c)"
+                >
+                  {{ etiquetaCondicion[c] }}
+                </button>
+              }
+            </div>
+          </fieldset>
+
+          <div class="flex flex-col gap-2">
+            <label for="anio" class="etiqueta">Año</label>
+            <input
+              id="anio"
+              type="number"
+              inputmode="numeric"
+              formControlName="anio"
+              class="campo"
+              [class.campo-invalido]="errorDe('anio')"
+              [placeholder]="anioMax - 1"
+            />
+            @if (errorDe('anio'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="color" class="etiqueta">Color</label>
+            <input
+              id="color"
+              type="text"
+              formControlName="color"
+              class="campo"
+              [class.campo-invalido]="errorDe('color')"
+              placeholder="Gris plata"
+            />
+            @if (errorDe('color'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="km" class="etiqueta">Kilometraje</label>
+            <input
+              id="km"
+              type="number"
+              inputmode="numeric"
+              formControlName="kilometraje"
+              class="campo"
+              [class.campo-invalido]="errorDe('kilometraje')"
+              placeholder="0"
+            />
+            @if (errorDe('kilometraje'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="precio" class="etiqueta">Precio ($)</label>
+            <input
+              id="precio"
+              type="number"
+              inputmode="decimal"
+              formControlName="precio"
+              class="campo"
+              [class.campo-invalido]="errorDe('precio')"
+              placeholder="25000000"
+            />
+            @if (errorDe('precio'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="vin" class="etiqueta">VIN (número de chasis)</label>
+            <input
+              id="vin"
+              type="text"
+              formControlName="vin"
+              maxlength="17"
+              autocomplete="off"
+              class="campo font-mono uppercase"
+              [class.campo-invalido]="errorDe('vin')"
+              placeholder="17 caracteres"
+            />
+            @if (errorDe('vin'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="descripcion" class="etiqueta">
+              Descripción <span class="font-normal text-fg-muted">(opcional)</span>
+            </label>
+            <textarea
+              id="descripcion"
+              rows="4"
+              formControlName="descripcion"
+              class="campo resize-y"
+              [class.campo-invalido]="errorDe('descripcion')"
+              [placeholder]="
+                puedeEditar() ? 'Equipamiento, estado general, service al día…' : 'Sin descripción'
+              "
+            ></textarea>
+            @if (errorDe('descripcion'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+        </div>
+
+        @if (puedeEditar()) {
+          <div class="flex justify-end gap-3 border-t border-line px-6 py-4">
+            <a routerLink="/panel/vehiculos" class="boton boton-secundario">Cancelar</a>
+            <button type="submit" class="boton boton-primario" [disabled]="guardando()">
+              @if (guardando()) {
+                Guardando…
+              } @else if (esNuevo()) {
+                Cargar vehículo
+              } @else {
+                Guardar cambios
+              }
+            </button>
+          </div>
+        }
+      </form>
+
+      <!-- Estado (solo en un vehículo existente) -->
+      @if (actual(); as v) {
+        <aside class="flex flex-col gap-6">
+          <section class="tarjeta flex flex-col gap-4 p-6">
+            <h2 class="text-h4">Estado</h2>
+            <app-estado-badge class="w-fit" [estado]="v.estado" [activo]="v.activo" />
+
+            @if (estadosPosibles().length) {
+              <div class="flex flex-col gap-2">
+                @for (e of estadosPosibles(); track e) {
+                  <button
+                    type="button"
+                    class="boton boton-secundario w-full"
+                    [disabled]="cambiandoEstado()"
+                    (click)="cambiarEstado(e)"
+                  >
+                    {{ accionEstado[e] }}
+                  </button>
+                }
+              </div>
+              <p class="text-xs text-fg-muted">
+                Al reservar o vender desde Ventas, el estado cambia solo.
+              </p>
+            }
+
+            @if (esAdmin()) {
+              <div class="border-t border-line pt-4">
+                @if (v.activo) {
+                  <button
+                    type="button"
+                    class="boton boton-peligro w-full"
+                    [disabled]="cambiandoEstado()"
+                    (click)="darDeBaja()"
+                  >
+                    Dar de baja
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="boton boton-primario w-full"
+                    [disabled]="cambiandoEstado()"
+                    (click)="reactivar()"
+                  >
+                    Reactivar
+                  </button>
+                }
+              </div>
+            }
+          </section>
+
+          <section class="tarjeta flex flex-col gap-3 p-6 text-sm">
+            <h2 class="text-h4">Información</h2>
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+              <dt class="text-fg-muted">Categoría</dt>
+              <dd class="text-right">{{ v.categoria }}</dd>
+              <dt class="text-fg-muted">Origen</dt>
+              <dd class="text-right">
+                {{ v.origen === 'TRADE_IN' ? 'Parte de pago' : 'Compra' }}
+              </dd>
+              <dt class="text-fg-muted">Ingreso</dt>
+              <dd class="text-right">{{ formatearFecha(v.fechaIngreso) }}</dd>
+            </dl>
+          </section>
+        </aside>
+      }
+    </div>
+  }
+</div>

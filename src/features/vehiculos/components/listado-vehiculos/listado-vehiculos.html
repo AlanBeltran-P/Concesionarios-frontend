@@ -1,0 +1,222 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-h2">Vehículos</h1>
+      <p class="text-sm text-fg-muted">Inventario de la concesionaria</p>
+    </div>
+    <a routerLink="nuevo" class="boton boton-primario">
+      <app-icono nombre="mas" class="size-[18px]" />
+      Nuevo vehículo
+    </a>
+  </header>
+
+  <!-- Filtros -->
+  <section class="tarjeta flex flex-col gap-3 p-4 xl:flex-row xl:items-center" aria-label="Filtros">
+    <label class="relative flex-1">
+      <span class="sr-only">Buscar</span>
+      <app-icono
+        nombre="buscar"
+        class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-muted"
+      />
+      <input
+        type="search"
+        class="campo pl-10"
+        placeholder="Buscar marca, modelo o VIN"
+        [value]="texto()"
+        (input)="buscarTexto($any($event.target).value)"
+      />
+    </label>
+
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:flex">
+      <label class="xl:w-48">
+        <span class="sr-only">Marca</span>
+        <select class="campo" (change)="filtrarMarca($any($event.target).value)">
+          <option value="" [selected]="!marcaId()">Todas las marcas</option>
+          @for (m of listaMarcas() ?? []; track m.id) {
+            <option [value]="m.id" [selected]="marcaId() === m.id">{{ m.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="xl:w-48">
+        <span class="sr-only">Estado</span>
+        <select class="campo" (change)="filtrarEstado($any($event.target).value)">
+          <option value="" [selected]="!estado()">Todos los estados</option>
+          @for (e of estados; track e[0]) {
+            <option [value]="e[0]" [selected]="estado() === e[0]">{{ e[1] }}</option>
+          }
+        </select>
+      </label>
+      <label class="xl:w-40">
+        <span class="sr-only">Condición</span>
+        <select class="campo" (change)="filtrarCondicion($any($event.target).value)">
+          <option value="" [selected]="!condicion()">0 km y usados</option>
+          @for (c of condiciones; track c[0]) {
+            <option [value]="c[0]" [selected]="condicion() === c[0]">{{ c[1] }}</option>
+          }
+        </select>
+      </label>
+      <label class="xl:w-48">
+        <span class="sr-only">Ordenar por</span>
+        <select class="campo" (change)="ordenar($any($event.target).value)">
+          @for (o of opcionesOrden; track o.valor) {
+            <option [value]="o.valor" [selected]="orden() === o.valor">{{ o.texto }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <!-- Resultados -->
+  @if (error(); as mensaje) {
+    <div
+      role="alert"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-md bg-danger-bg px-4 py-3 text-sm text-danger"
+    >
+      {{ mensaje }}
+      <button type="button" class="boton boton-secundario h-9" (click)="resultado.reload()">
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <section
+      class="tarjeta overflow-hidden"
+      aria-label="Vehículos"
+      [attr.aria-busy]="resultado.isLoading()"
+    >
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead
+            class="border-b border-line bg-subtle text-xs font-semibold tracking-[0.04em] text-fg-muted uppercase"
+          >
+            <tr>
+              <th scope="col" class="px-4 py-3 sm:px-5">Vehículo</th>
+              <th scope="col" class="hidden px-5 py-3 md:table-cell">Año</th>
+              <th scope="col" class="hidden px-5 py-3 md:table-cell">Kilometraje</th>
+              <th scope="col" class="hidden px-5 py-3 lg:table-cell">Condición</th>
+              <th scope="col" class="px-4 py-3 text-right sm:px-5">Precio</th>
+              <th scope="col" class="hidden px-5 py-3 sm:table-cell">Estado</th>
+              <th scope="col" class="hidden w-10 px-3 py-3 sm:table-cell">
+                <span class="sr-only">Abrir</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line" [class.opacity-60]="resultado.isLoading()">
+            @for (v of datos()?.content ?? []; track v.id) {
+              <tr class="group relative transition hover:bg-subtle">
+                <td class="px-4 py-3.5 sm:px-5">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="hidden size-11 shrink-0 place-items-center overflow-hidden rounded-md bg-subtle text-fg-disabled sm:grid"
+                    >
+                      <app-icono nombre="auto" class="size-6" />
+                    </span>
+                    <div class="flex min-w-0 flex-col">
+                      <!-- El enlace cubre toda la fila (after:inset-0) -->
+                      <a
+                        [routerLink]="[v.id]"
+                        class="truncate font-medium text-fg after:absolute after:inset-0 focus-visible:outline-none"
+                      >
+                        {{ v.marca }} {{ v.modelo }}
+                      </a>
+                      <!-- En pantallas chicas no entran las columnas de año y km: van acá -->
+                      <span class="truncate text-xs text-fg-muted md:hidden">
+                        {{ v.anio }} · {{ formatearKm(v.kilometraje) }}
+                      </span>
+                      <span class="hidden truncate text-xs text-fg-muted md:inline">
+                        {{ v.categoria }} · {{ v.color }}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td class="hidden px-5 py-3.5 text-fg-secondary md:table-cell">{{ v.anio }}</td>
+                <td class="hidden px-5 py-3.5 text-fg-secondary md:table-cell">
+                  {{ formatearKm(v.kilometraje) }}
+                </td>
+                <td class="hidden px-5 py-3.5 text-fg-secondary lg:table-cell">
+                  {{ etiquetaCondicion[v.condicion] }}
+                </td>
+                <td
+                  class="px-4 py-3.5 text-right font-display font-semibold whitespace-nowrap sm:px-5"
+                >
+                  {{ formatearPrecio(v.precio) }}
+                  <!-- En celular el estado va debajo del precio -->
+                  <app-estado-badge class="mt-1 block font-sans sm:hidden" [estado]="v.estado" />
+                </td>
+                <td class="hidden px-5 py-3.5 sm:table-cell">
+                  <app-estado-badge [estado]="v.estado" />
+                </td>
+                <td class="hidden px-3 py-3.5 text-fg-muted group-hover:text-fg sm:table-cell">
+                  <app-icono nombre="flecha-derecha" class="size-4" />
+                </td>
+              </tr>
+            } @empty {
+              @if (!resultado.isLoading()) {
+                <tr>
+                  <td colspan="7" class="px-5 py-14 text-center">
+                    <div class="flex flex-col items-center gap-3">
+                      <span
+                        class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted"
+                      >
+                        <app-icono nombre="auto" class="size-6" />
+                      </span>
+                      @if (hayFiltros()) {
+                        <p class="font-medium">No hay vehículos con esos filtros</p>
+                        <button
+                          type="button"
+                          class="boton boton-secundario"
+                          (click)="limpiarFiltros()"
+                        >
+                          Limpiar filtros
+                        </button>
+                      } @else {
+                        <p class="font-medium">Todavía no hay vehículos cargados</p>
+                        <a routerLink="nuevo" class="boton boton-primario">Cargar el primero</a>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              } @else {
+                <tr>
+                  <td colspan="7" class="px-5 py-14 text-center text-fg-muted">
+                    Cargando vehículos…
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (datos()?.page; as p) {
+        @if (p.totalPages > 1) {
+          <nav
+            class="flex items-center justify-between gap-3 border-t border-line px-5 py-3 text-sm"
+            aria-label="Paginado"
+          >
+            <span class="text-fg-muted">{{ rango() }}</span>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="boton boton-secundario h-9"
+                [disabled]="p.number === 0"
+                (click)="irAPagina(p.number - 1)"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                class="boton boton-secundario h-9"
+                [disabled]="p.number + 1 >= p.totalPages"
+                (click)="irAPagina(p.number + 1)"
+              >
+                Siguiente
+              </button>
+            </div>
+          </nav>
+        } @else if (p.totalElements > 0) {
+          <p class="border-t border-line px-5 py-3 text-sm text-fg-muted">{{ rango() }}</p>
+        }
+      }
+    </section>
+  }
+</div>

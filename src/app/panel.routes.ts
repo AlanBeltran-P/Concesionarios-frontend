@@ -14,18 +14,50 @@ const inicioDelPanel: CanActivateFn = () =>
     inject(AuthService).tieneRol('ADMIN') ? '/panel/dashboard' : '/panel/vehiculos',
   ]);
 
-/**
- * Rutas dentro de /panel, una por ítem del menú y con los mismos roles.
- * Por ahora todas muestran la página provisoria; cada feature va a reemplazar la suya.
- */
+/** Pantallas de cada sección que ya está hecha. Las que no figuran acá muestran la página provisoria. */
+const SECCIONES: Record<string, Routes> = {
+  vehiculos: [
+    {
+      path: '',
+      title: 'Vehículos · Concesionaria',
+      loadComponent: () =>
+        import('../features/vehiculos/components/listado-vehiculos/listado-vehiculos').then(
+          (m) => m.ListadoVehiculos,
+        ),
+    },
+    {
+      path: 'nuevo',
+      title: 'Nuevo vehículo · Concesionaria',
+      loadComponent: () =>
+        import('../features/vehiculos/components/ficha-vehiculo/ficha-vehiculo').then(
+          (m) => m.FichaVehiculo,
+        ),
+    },
+    {
+      path: ':id',
+      title: 'Vehículo · Concesionaria',
+      loadComponent: () =>
+        import('../features/vehiculos/components/ficha-vehiculo/ficha-vehiculo').then(
+          (m) => m.FichaVehiculo,
+        ),
+    },
+  ],
+};
+
+/** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },
   ...MENU_PANEL.flatMap((seccion) => seccion.items).map((item) => ({
     path: item.ruta,
-    title: `${item.texto} · Concesionaria`,
     canActivate: [rolGuard(...item.roles)],
-    data: { titulo: item.texto },
-    loadComponent: () =>
-      import('../shared/ui/en-construccion/en-construccion').then((m) => m.EnConstruccion),
+    children: SECCIONES[item.ruta] ?? [
+      {
+        path: '',
+        title: `${item.texto} · Concesionaria`,
+        data: { titulo: item.texto },
+        loadComponent: () =>
+          import('../shared/ui/en-construccion/en-construccion').then((m) => m.EnConstruccion),
+      },
+    ],
   })),
 ];
