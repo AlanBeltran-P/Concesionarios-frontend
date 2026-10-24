@@ -1,4 +1,10 @@
-import { CondicionVehiculo, EstadoVehiculo, OrdenVehiculos } from './model';
+import {
+  CondicionVehiculo,
+  EstadoVehiculo,
+  OrdenVehiculos,
+  Vehiculo,
+  VehiculoResumen,
+} from './model';
 
 export const ETIQUETA_ESTADO: Record<EstadoVehiculo, string> = {
   DISPONIBLE: 'Disponible',
@@ -42,4 +48,21 @@ export function estadosSiguientes(actual: EstadoVehiculo, esAdmin: boolean): Est
     case 'VENDIDO':
       return esAdmin ? ['DISPONIBLE'] : [];
   }
+}
+
+/** Un vehículo completo en el formato de una fila del listado (para precargar buscadores). */
+export function aResumen(v: Vehiculo): VehiculoResumen {
+  return {
+    id: v.id,
+    marca: v.marca,
+    modelo: v.modelo,
+    categoria: v.categoria,
+    anio: v.anio,
+    color: v.color,
+    kilometraje: v.kilometraje,
+    precio: v.precio,
+    condicion: v.condicion,
+    estado: v.estado,
+    imagenPrincipalUrl: v.imagenes.find((i) => i.principal)?.url ?? null,
+  };
 }

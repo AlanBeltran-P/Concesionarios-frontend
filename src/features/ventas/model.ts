@@ -4,6 +4,7 @@ export type EstadoCotizacion = 'SOLICITADA' | 'RESPONDIDA' | 'ACEPTADA' | 'RECHA
 export type EstadoReserva = 'ACTIVA' | 'VENCIDA' | 'CONVERTIDA' | 'ANULADA';
 export type EstadoVenta = 'CONFIRMADA' | 'ANULADA';
 export type FormaPago = 'CONTADO' | 'FINANCIADA';
+export type EstadoComision = 'PENDIENTE' | 'PAGADA' | 'ANULADA';
 
 export interface Cotizacion {
   id: number;
@@ -68,6 +69,8 @@ export interface Venta {
   cantidadCuotas: number | null;
   montoFinanciado: number | null;
   valorCuota: number | null;
+  /** Solo la ven los empleados. */
+  comision: { id: number; porcentaje: number; monto: number; estado: EstadoComision } | null;
   estado: EstadoVenta;
   motivoAnulacion: string | null;
   fechaVenta: string;
@@ -129,4 +132,48 @@ export interface FiltroCotizaciones {
   sinAsignar?: boolean;
   page: number;
   size: number;
+}
+
+export interface FiltroReservas {
+  clienteId?: number;
+  vehiculoId?: number;
+  estado?: EstadoReserva;
+  page: number;
+  size: number;
+}
+
+/** clienteId es obligatorio cuando reserva un empleado. */
+export interface NuevaReserva {
+  clienteId: number;
+  vehiculoId: number;
+  montoAnticipo: number;
+  cotizacionId: number | null;
+  diasVigencia: number | null;
+}
+
+export interface FiltroVentas {
+  clienteId?: number;
+  vendedorId?: number;
+  estado?: EstadoVenta;
+  /** "2026-10-01" */
+  desde?: string;
+  hasta?: string;
+  page: number;
+  size: number;
+}
+
+/**
+ * Con cotización, el precio, el descuento y el auto usado salen de ella (no se mandan).
+ * Si el cliente tiene una reserva activa del vehículo, el backend la usa sola y descuenta la seña.
+ */
+export interface NuevaVenta {
+  clienteId: number;
+  vehiculoId: number;
+  cotizacionId: number | null;
+  tasacionId: number | null;
+  descuento: number | null;
+  formaPago: FormaPago;
+  planFinanciamientoId: number | null;
+  cantidadCuotas: number | null;
+  montoFinanciado: number | null;
 }

@@ -63,3 +63,46 @@ export function tasacionUtilizable(t: Tasacion, hoy = hoyISO()): boolean {
     (!t.fechaValidez || t.fechaValidez >= hoy)
   );
 }
+
+/** Mismos valores que "reserva" en el config de venta-service. */
+export const SENA_MINIMA_PORCENTAJE = 5;
+export const DIAS_RESERVA = 7;
+export const DIAS_RESERVA_MAXIMO = 30;
+
+export function senaMinima(precio: number): number {
+  return Math.round(precio * SENA_MINIMA_PORCENTAJE) / 100;
+}
+
+export interface CuentaVenta {
+  /** Precio de lista menos descuento. */
+  precioFinal: number;
+  /** Lo que queda por pagar después del auto usado y la seña. */
+  saldo: number;
+  /** Lo que se paga en efectivo (saldo - financiado). */
+  entrega: number;
+  /** Máximo que se puede financiar: el saldo, y que el anticipo llegue al mínimo del plan. */
+  maximoFinanciable: number;
+}
+
+/** Igual que VentaService: el anticipo del plan es todo lo que no se financia (incluye auto usado y seña). */
+export function cuentaVenta(datos: {
+  precioLista: number;
+  descuento: number;
+  valorTradeIn: number;
+  sena: number;
+  financiado: number;
+  anticipoMinimoPlan: number | null;
+}): CuentaVenta {
+  const precioFinal = datos.precioLista - datos.descuento;
+  const saldo = precioFinal - datos.valorTradeIn - datos.sena;
+  const topePlan =
+    datos.anticipoMinimoPlan === null
+      ? saldo
+      : Math.floor(precioFinal * (100 - datos.anticipoMinimoPlan)) / 100;
+  return {
+    precioFinal,
+    saldo,
+    entrega: saldo - datos.financiado,
+    maximoFinanciable: Math.max(0, Math.min(saldo, topePlan)),
+  };
+}

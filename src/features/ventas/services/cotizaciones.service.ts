@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pagina } from '../../../shared/types/pagina';
+import { hoyISO } from '../../../shared/utils/formato';
 import { aParams } from '../../../shared/utils/http';
 import {
   Cotizacion,
@@ -42,6 +43,21 @@ export class CotizacionesService {
   /** Registra lo que decidió el cliente. */
   decidir(id: number, decision: 'aceptar' | 'rechazar'): Observable<Cotizacion> {
     return this.http.post<Cotizacion>(`${this.url}/${id}/${decision}`, null);
+  }
+
+  /** Las que se pueden usar para reservar o vender ese vehículo: respondidas o aceptadas y sin vencer. */
+  vigentesPara(clienteId: number, vehiculoId: number): Observable<Cotizacion[]> {
+    const hoy = hoyISO();
+    return this.buscar({ clienteId, page: 0, size: 50 }).pipe(
+      map((p) =>
+        p.content.filter(
+          (c) =>
+            c.vehiculoId === vehiculoId &&
+            (c.estado === 'RESPONDIDA' || c.estado === 'ACEPTADA') &&
+            (!c.fechaValidez || c.fechaValidez >= hoy),
+        ),
+      ),
+    );
   }
 
   /** Todas las tasaciones de un cliente, las más nuevas primero. */

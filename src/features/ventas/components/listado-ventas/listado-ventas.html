@@ -1,0 +1,227 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-h2">Ventas</h1>
+      <p class="text-sm text-fg-muted">Ventas registradas y reservas con seña</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <a routerLink="reservas/nueva" class="boton boton-secundario">Nueva reserva</a>
+      <a routerLink="nueva" class="boton boton-primario">
+        <app-icono nombre="mas" class="size-[18px]" />
+        Registrar venta
+      </a>
+    </div>
+  </header>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <nav class="flex gap-1 rounded-md bg-subtle p-1" aria-label="Vistas">
+      @for (v of ['ventas', 'reservas']; track v) {
+        <button
+          type="button"
+          class="rounded-[7px] px-4 py-2 text-sm font-medium transition"
+          [class.bg-surface]="actual() === v"
+          [class.shadow-sm]="actual() === v"
+          [class.text-fg]="actual() === v"
+          [class.text-fg-secondary]="actual() !== v"
+          [attr.aria-pressed]="actual() === v"
+          (click)="cambiarVista($any(v))"
+        >
+          {{ v === 'ventas' ? 'Ventas' : 'Reservas' }}
+        </button>
+      }
+    </nav>
+
+    @if (actual() === 'ventas') {
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            class="size-4 accent-fg"
+            [checked]="soloMias()"
+            (change)="filtrar('mias', $any($event.target).checked)"
+          />
+          Solo las mías
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <span class="text-fg-muted">Desde</span>
+          <input
+            type="date"
+            class="campo h-10 w-40"
+            [value]="desde()"
+            (change)="filtrar('desde', $any($event.target).value)"
+          />
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <span class="text-fg-muted">Hasta</span>
+          <input
+            type="date"
+            class="campo h-10 w-40"
+            [value]="hasta()"
+            (change)="filtrar('hasta', $any($event.target).value)"
+          />
+        </label>
+        <label>
+          <span class="sr-only">Estado</span>
+          <select
+            class="campo h-10 w-44"
+            (change)="filtrar('estadoVenta', $any($event.target).value)"
+          >
+            <option value="" [selected]="!estadoVentaFiltro()">Todos los estados</option>
+            @for (e of estadosVenta; track e[0]) {
+              <option [value]="e[0]" [selected]="estadoVentaFiltro() === e[0]">
+                {{ e[1].texto }}
+              </option>
+            }
+          </select>
+        </label>
+      </div>
+    } @else {
+      <label>
+        <span class="sr-only">Estado</span>
+        <select
+          class="campo h-10 w-52"
+          (change)="filtrar('estadoReserva', $any($event.target).value)"
+        >
+          <option value="" [selected]="!estadoReservaFiltro()">Todas las reservas</option>
+          @for (e of estadosReserva; track e[0]) {
+            <option [value]="e[0]" [selected]="estadoReservaFiltro() === e[0]">
+              {{ e[1].texto }}
+            </option>
+          }
+        </select>
+      </label>
+    }
+  </div>
+
+  @if (error(); as mensaje) {
+    <div
+      role="alert"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-md bg-danger-bg px-4 py-3 text-sm text-danger"
+    >
+      {{ mensaje }}
+      <button type="button" class="boton boton-secundario h-9" (click)="reintentar()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (actual() === 'ventas') {
+    <section class="tarjeta overflow-hidden" aria-label="Ventas" [attr.aria-busy]="cargando()">
+      <table class="w-full text-left text-sm">
+        <thead
+          class="border-b border-line bg-subtle text-xs font-semibold tracking-[0.04em] text-fg-muted uppercase"
+        >
+          <tr>
+            <th scope="col" class="px-4 py-3 sm:px-5">Venta</th>
+            <th scope="col" class="hidden px-5 py-3 md:table-cell">Vendedor</th>
+            <th scope="col" class="hidden px-5 py-3 lg:table-cell">Fecha</th>
+            <th scope="col" class="px-4 py-3 text-right sm:px-5">Total</th>
+            <th scope="col" class="hidden px-5 py-3 sm:table-cell">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line" [class.opacity-60]="cargando()">
+          @for (v of datosVentas()?.content ?? []; track v.id) {
+            <tr class="relative transition hover:bg-subtle">
+              <td class="px-4 py-3.5 sm:px-5">
+                <div class="flex min-w-0 flex-col">
+                  <a
+                    [routerLink]="[v.id]"
+                    class="truncate font-medium after:absolute after:inset-0 focus-visible:outline-none"
+                  >
+                    {{ v.clienteNombre }}
+                  </a>
+                  <span class="truncate text-xs text-fg-muted">
+                    {{ v.numeroComprobante }} · {{ v.vehiculo }} · {{ formaPago[v.formaPago] }}
+                  </span>
+                </div>
+              </td>
+              <td class="hidden px-5 py-3.5 text-fg-secondary md:table-cell">
+                {{ v.vendedorNombre }}
+              </td>
+              <td class="hidden px-5 py-3.5 whitespace-nowrap text-fg-secondary lg:table-cell">
+                {{ formatearFecha(v.fechaVenta) }}
+              </td>
+              <td class="px-4 py-3.5 text-right whitespace-nowrap sm:px-5">
+                <span class="font-display font-semibold">{{ formatearPrecio(v.precioFinal) }}</span>
+                <app-etiqueta
+                  class="mt-1 block font-sans sm:hidden"
+                  [tono]="estadoVenta[v.estado].tono"
+                >
+                  {{ estadoVenta[v.estado].texto }}
+                </app-etiqueta>
+              </td>
+              <td class="hidden px-5 py-3.5 sm:table-cell">
+                <app-etiqueta [tono]="estadoVenta[v.estado].tono">
+                  {{ estadoVenta[v.estado].texto }}
+                </app-etiqueta>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
+                {{ cargando() ? 'Cargando ventas…' : 'No hay ventas con esos filtros.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginado [info]="datosVentas()?.page" (cambiar)="pagina.set($event)" />
+    </section>
+  } @else {
+    <section class="tarjeta overflow-hidden" aria-label="Reservas" [attr.aria-busy]="cargando()">
+      <table class="w-full text-left text-sm">
+        <thead
+          class="border-b border-line bg-subtle text-xs font-semibold tracking-[0.04em] text-fg-muted uppercase"
+        >
+          <tr>
+            <th scope="col" class="px-4 py-3 sm:px-5">Reserva</th>
+            <th scope="col" class="hidden px-5 py-3 md:table-cell">Vence</th>
+            <th scope="col" class="px-4 py-3 text-right sm:px-5">Seña</th>
+            <th scope="col" class="hidden px-5 py-3 sm:table-cell">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line" [class.opacity-60]="cargando()">
+          @for (r of datosReservas()?.content ?? []; track r.id) {
+            <tr class="relative transition hover:bg-subtle">
+              <td class="px-4 py-3.5 sm:px-5">
+                <div class="flex min-w-0 flex-col">
+                  <a
+                    [routerLink]="['reservas', r.id]"
+                    class="truncate font-medium after:absolute after:inset-0 focus-visible:outline-none"
+                  >
+                    {{ r.clienteNombre }}
+                  </a>
+                  <span class="truncate text-xs text-fg-muted">{{ r.vehiculo }}</span>
+                </div>
+              </td>
+              <td class="hidden px-5 py-3.5 whitespace-nowrap text-fg-secondary md:table-cell">
+                {{ formatearFecha(r.fechaVencimiento) }}
+              </td>
+              <td class="px-4 py-3.5 text-right whitespace-nowrap sm:px-5">
+                <span class="font-display font-semibold">
+                  {{ formatearPrecio(r.montoAnticipo) }}
+                </span>
+                <app-etiqueta
+                  class="mt-1 block font-sans sm:hidden"
+                  [tono]="estadoReserva[r.estado].tono"
+                >
+                  {{ estadoReserva[r.estado].texto }}
+                </app-etiqueta>
+              </td>
+              <td class="hidden px-5 py-3.5 sm:table-cell">
+                <app-etiqueta [tono]="estadoReserva[r.estado].tono">
+                  {{ estadoReserva[r.estado].texto }}
+                </app-etiqueta>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="px-5 py-14 text-center text-fg-muted">
+                {{ cargando() ? 'Cargando reservas…' : 'No hay reservas con ese filtro.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginado [info]="datosReservas()?.page" (cambiar)="pagina.set($event)" />
+    </section>
+  }
+</div>

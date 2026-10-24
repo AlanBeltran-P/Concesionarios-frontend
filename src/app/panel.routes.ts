@@ -97,6 +97,33 @@ SECCIONES['cotizaciones'] = [
   { path: ':id', title: 'Cotización · Concesionaria', loadComponent: fichaCotizacion },
 ];
 
+const fichaReserva = () =>
+  import('../features/ventas/components/ficha-reserva/ficha-reserva').then((m) => m.FichaReserva);
+SECCIONES['ventas'] = [
+  {
+    path: '',
+    title: 'Ventas · Concesionaria',
+    loadComponent: () =>
+      import('../features/ventas/components/listado-ventas/listado-ventas').then(
+        (m) => m.ListadoVentas,
+      ),
+  },
+  {
+    path: 'nueva',
+    title: 'Registrar venta · Concesionaria',
+    loadComponent: () =>
+      import('../features/ventas/components/nueva-venta/nueva-venta').then((m) => m.NuevaVenta),
+  },
+  { path: 'reservas/nueva', title: 'Nueva reserva · Concesionaria', loadComponent: fichaReserva },
+  { path: 'reservas/:id', title: 'Reserva · Concesionaria', loadComponent: fichaReserva },
+  {
+    path: ':id',
+    title: 'Venta · Concesionaria',
+    loadComponent: () =>
+      import('../features/ventas/components/ficha-venta/ficha-venta').then((m) => m.FichaVenta),
+  },
+];
+
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },

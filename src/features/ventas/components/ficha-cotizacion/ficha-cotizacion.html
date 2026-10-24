@@ -288,6 +288,32 @@
               </button>
             </div>
           }
+          @if (c.estado === 'ACEPTADA') {
+            <div class="flex flex-col gap-2 border-t border-line pt-4">
+              <a
+                routerLink="/panel/ventas/nueva"
+                [queryParams]="{
+                  clienteId: c.clienteId,
+                  vehiculoId: c.vehiculoId,
+                  cotizacionId: c.id,
+                }"
+                class="boton boton-primario w-full"
+              >
+                Registrar la venta
+              </a>
+              <a
+                routerLink="/panel/ventas/reservas/nueva"
+                [queryParams]="{
+                  clienteId: c.clienteId,
+                  vehiculoId: c.vehiculoId,
+                  cotizacionId: c.id,
+                }"
+                class="boton boton-secundario w-full"
+              >
+                Reservar con seña
+              </a>
+            </div>
+          }
         }
       </aside>
     </div>

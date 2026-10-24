@@ -1,0 +1,281 @@
+<div class="flex flex-col gap-6">
+  <a
+    routerLink="/panel/ventas"
+    class="inline-flex w-fit items-center gap-1 text-sm font-medium text-fg-secondary hover:text-fg"
+  >
+    <app-icono nombre="flecha-izquierda" class="size-4" />
+    Ventas
+  </a>
+
+  <h1 class="text-h2">Registrar venta</h1>
+
+  @if (error(); as mensaje) {
+    <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+      {{ mensaje }}
+    </div>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+    <div class="flex flex-col gap-6 lg:col-span-2">
+      <!-- Cliente y vehículo -->
+      <section class="tarjeta flex flex-col gap-5 p-6">
+        <h2 class="text-h4">Cliente y vehículo</h2>
+        <div class="flex flex-col gap-2">
+          <span class="etiqueta">Cliente</span>
+          <app-buscador
+            etiqueta="Cliente"
+            placeholder="Buscar por nombre, email o documento"
+            vacio="No hay clientes con esa búsqueda."
+            [buscar]="buscarClientes"
+            [principal]="nombreCliente"
+            [secundario]="detalleCliente"
+            [invalido]="intento() && !!errores()['cliente']"
+            [seleccionado]="cliente()"
+            (seleccionadoChange)="elegirCliente($event)"
+          />
+          @if (intento() && errores()['cliente']; as e) {
+            <p class="error-campo">
+              {{ e }}
+              @if (cliente(); as c) {
+                <a [routerLink]="['/panel/clientes', c.id]" class="underline">Completalo acá</a>.
+              }
+            </p>
+          }
+        </div>
+        <div class="flex flex-col gap-2">
+          <span class="etiqueta">Vehículo</span>
+          <app-buscador
+            etiqueta="Vehículo"
+            placeholder="Buscar por marca, modelo o VIN"
+            vacio="No hay vehículos a la venta con esa búsqueda."
+            [buscar]="buscarVehiculos"
+            [principal]="nombreVehiculo"
+            [secundario]="detalleVehiculo"
+            [invalido]="intento() && !!errores()['vehiculo']"
+            [seleccionado]="vehiculo()"
+            (seleccionadoChange)="elegirVehiculo($event)"
+          />
+          @if (intento() && errores()['vehiculo']; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </div>
+        @if (reserva(); as r) {
+          <p class="rounded-md bg-info-bg px-4 py-3 text-sm text-info">
+            El cliente tiene este auto reservado (reserva #{{ r.id }}): la seña de
+            {{ formatearPrecio(r.montoAnticipo) }} se descuenta del saldo.
+          </p>
+        }
+      </section>
+
+      <!-- Precio -->
+      @if (cliente() && vehiculo()) {
+        <section class="tarjeta flex flex-col gap-5 p-6">
+          <h2 class="text-h4">Precio</h2>
+          @if (cotizacionesVigentes().length) {
+            <div class="flex flex-col gap-2">
+              <label for="cotizacion" class="etiqueta">Cotización</label>
+              <select
+                id="cotizacion"
+                class="campo"
+                (change)="cotizacionElegida.set(numero($any($event.target).value) || null)"
+              >
+                <option value="" [selected]="!cotizacionElegida()">
+                  Sin cotización (precio de lista)
+                </option>
+                @for (c of cotizacionesVigentes(); track c.id) {
+                  <option [value]="c.id" [selected]="cotizacionElegida() === c.id">
+                    #{{ c.id }} · {{ formatearPrecio(c.precioFinal ?? c.precioLista) }}
+                  </option>
+                }
+              </select>
+              @if (cotizacion()) {
+                <p class="text-xs text-fg-muted">
+                  El descuento y el auto usado salen de la cotización.
+                </p>
+              }
+            </div>
+          }
+
+          @if (!cotizacion()) {
+            <div class="flex flex-col gap-2 sm:w-1/2">
+              <label for="descuento" class="etiqueta">Descuento ($)</label>
+              <input
+                id="descuento"
+                type="number"
+                min="0"
+                class="campo"
+                placeholder="0"
+                [class.campo-invalido]="intento() && errores()['descuento']"
+                [value]="descuento() || ''"
+                (input)="descuento.set(numero($any($event.target).value))"
+              />
+              @if (intento() && errores()['descuento']; as e) {
+                <p class="error-campo">{{ e }}</p>
+              } @else if (maximoDescuento() !== null) {
+                <p class="text-xs text-fg-muted">
+                  Hasta {{ formatearPrecio(maximoDescuento()!) }}.
+                </p>
+              }
+            </div>
+            <div class="flex flex-col gap-2">
+              <span class="etiqueta">Auto usado como parte de pago</span>
+              <app-tasaciones-cliente [clienteId]="cliente()!.id" [(elegida)]="tasacion" />
+            </div>
+          }
+          @if (intento() && errores()['saldo']; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </section>
+
+        <!-- Forma de pago -->
+        <section class="tarjeta flex flex-col gap-5 p-6">
+          <h2 class="text-h4">Forma de pago</h2>
+          <div class="grid grid-cols-2 gap-1 rounded-md bg-subtle p-1 sm:w-80">
+            @for (f of ['CONTADO', 'FINANCIADA']; track f) {
+              <button
+                type="button"
+                class="h-9 rounded-[7px] text-sm font-medium transition"
+                [class.bg-surface]="formaPago() === f"
+                [class.shadow-sm]="formaPago() === f"
+                [class.text-fg]="formaPago() === f"
+                [class.text-fg-secondary]="formaPago() !== f"
+                [attr.aria-pressed]="formaPago() === f"
+                (click)="formaPago.set($any(f))"
+              >
+                {{ f === 'CONTADO' ? 'Contado' : 'Financiada' }}
+              </button>
+            }
+          </div>
+
+          @if (formaPago() === 'FINANCIADA') {
+            <div class="grid gap-5 sm:grid-cols-3">
+              <div class="flex flex-col gap-2">
+                <label for="plan" class="etiqueta">Plan</label>
+                <select
+                  id="plan"
+                  class="campo"
+                  [class.campo-invalido]="intento() && errores()['plan']"
+                  (change)="elegirPlan($any($event.target).value)"
+                >
+                  <option value="" [selected]="!planId()" disabled>Elegí un plan</option>
+                  @for (p of listaPlanes(); track p.id) {
+                    <option [value]="p.id" [selected]="planId() === p.id">
+                      {{ p.nombre }} ({{ p.tasaAnual }} % anual)
+                    </option>
+                  }
+                </select>
+                @if (intento() && errores()['plan']; as e) {
+                  <p class="error-campo">{{ e }}</p>
+                } @else if (!listaPlanes().length) {
+                  <p class="text-xs text-fg-muted">No hay planes activos.</p>
+                }
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="cuotas" class="etiqueta">Cuotas</label>
+                <select
+                  id="cuotas"
+                  class="campo"
+                  [class.campo-invalido]="intento() && errores()['cuotas']"
+                  [disabled]="!plan()"
+                  (change)="cuotas.set(numero($any($event.target).value) || null)"
+                >
+                  <option value="" [selected]="!cuotas()" disabled>Elegí</option>
+                  @for (n of plan()?.plazos ?? []; track n) {
+                    <option [value]="n" [selected]="cuotas() === n">{{ n }} cuotas</option>
+                  }
+                </select>
+                @if (intento() && errores()['cuotas']; as e) {
+                  <p class="error-campo">{{ e }}</p>
+                }
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="financiado" class="etiqueta">Monto a financiar ($)</label>
+                <input
+                  id="financiado"
+                  type="number"
+                  min="1"
+                  class="campo"
+                  [class.campo-invalido]="intento() && errores()['financiado']"
+                  [value]="financiado() || ''"
+                  (input)="cambiarFinanciado(numero($any($event.target).value))"
+                />
+                @if (intento() && errores()['financiado']; as e) {
+                  <p class="error-campo">{{ e }}</p>
+                }
+                @if (plan()) {
+                  <button
+                    type="button"
+                    class="w-fit text-xs font-medium text-fg underline"
+                    (click)="financiarMaximo()"
+                  >
+                    Financiar el máximo ({{ formatearPrecio(cuenta().maximoFinanciable) }})
+                  </button>
+                }
+              </div>
+            </div>
+            @if (plan(); as p) {
+              <p class="text-xs text-fg-muted">
+                El plan pide un anticipo de al menos el {{ p.porcentajeAnticipoMinimo }} % del
+                precio (cuentan el efectivo, la seña y el auto usado).
+              </p>
+            }
+            @if (errorSimulacion(); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          }
+        </section>
+      }
+    </div>
+
+    <!-- Resumen -->
+    <aside class="tarjeta flex flex-col gap-4 p-6">
+      <h2 class="text-h4">Resumen</h2>
+      <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-sm">
+        <dt class="text-fg-muted">Precio de lista</dt>
+        <dd class="text-right">{{ precioLista() ? formatearPrecio(precioLista()) : '—' }}</dd>
+        <dt class="text-fg-muted">Descuento</dt>
+        <dd class="text-right">
+          {{ descuentoAplicado() ? '− ' + formatearPrecio(descuentoAplicado()) : '—' }}
+        </dd>
+        <dt class="font-medium">Precio final</dt>
+        <dd class="text-right font-medium">
+          {{ precioLista() ? formatearPrecio(cuenta().precioFinal) : '—' }}
+        </dd>
+        <dt class="text-fg-muted">Auto usado</dt>
+        <dd class="text-right">
+          {{ valorTradeIn() ? '− ' + formatearPrecio(valorTradeIn()) : '—' }}
+        </dd>
+        <dt class="text-fg-muted">Seña de la reserva</dt>
+        <dd class="text-right">
+          {{ reserva() ? '− ' + formatearPrecio(reserva()!.montoAnticipo) : '—' }}
+        </dd>
+      </dl>
+      <div class="flex items-baseline justify-between border-t border-line pt-3">
+        <span class="text-sm font-medium">Saldo a pagar</span>
+        <span class="text-price">{{ precioLista() ? formatearPrecio(cuenta().saldo) : '—' }}</span>
+      </div>
+      @if (formaPago() === 'FINANCIADA' && precioLista()) {
+        <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 border-t border-line pt-3 text-sm">
+          <dt class="text-fg-muted">Financiado</dt>
+          <dd class="text-right">{{ formatearPrecio(financiado()) }}</dd>
+          <dt class="font-medium">Entrega en efectivo</dt>
+          <dd class="text-right font-medium">{{ formatearPrecio(cuenta().entrega) }}</dd>
+          @if (simulacion(); as s) {
+            <dt class="text-fg-muted">Cuotas</dt>
+            <dd class="text-right">{{ s.cantidadCuotas }} × {{ formatearPrecio(s.valorCuota) }}</dd>
+            <dt class="text-fg-muted">Intereses</dt>
+            <dd class="text-right">{{ formatearPrecio(s.totalIntereses) }}</dd>
+          }
+        </dl>
+      }
+      <button
+        type="button"
+        class="boton boton-primario w-full"
+        [disabled]="guardando()"
+        (click)="registrar()"
+      >
+        {{ guardando() ? 'Registrando…' : 'Registrar venta' }}
+      </button>
+    </aside>
+  </div>
+</div>

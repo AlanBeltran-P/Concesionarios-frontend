@@ -1,0 +1,268 @@
+<div class="flex flex-col gap-6">
+  <a
+    routerLink="/panel/ventas"
+    [queryParams]="{ vista: 'reservas' }"
+    class="inline-flex w-fit items-center gap-1 text-sm font-medium text-fg-secondary hover:text-fg"
+  >
+    <app-icono nombre="flecha-izquierda" class="size-4" />
+    Reservas
+  </a>
+
+  @if (errorCarga(); as mensaje) {
+    <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
+      <p class="font-medium">{{ mensaje }}</p>
+      <a routerLink="/panel/ventas" class="boton boton-secundario">Volver a ventas</a>
+    </div>
+  } @else if (!esNueva() && !reserva()) {
+    <p class="py-14 text-center text-fg-muted">Cargando reserva…</p>
+  } @else {
+    <header class="flex flex-wrap items-center gap-3">
+      @if (reserva(); as r) {
+        <h1 class="text-h2">Reserva #{{ r.id }}</h1>
+        <app-etiqueta [tono]="estadoReserva[r.estado].tono">
+          {{ estadoReserva[r.estado].texto }}
+        </app-etiqueta>
+      } @else {
+        <h1 class="text-h2">Nueva reserva</h1>
+      }
+    </header>
+
+    @if (aviso(); as mensaje) {
+      <div
+        role="status"
+        class="flex items-center gap-2 rounded-md bg-success-bg px-4 py-3 text-sm text-success"
+      >
+        <app-icono nombre="check" class="size-4" />
+        {{ mensaje }}
+      </div>
+    }
+    @if (error(); as mensaje) {
+      <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+        {{ mensaje }}
+      </div>
+    }
+
+    @if (reserva(); as r) {
+      <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+        <section class="tarjeta flex flex-col gap-5 p-6 lg:col-span-2">
+          <h2 class="text-h4">Datos</h2>
+          <dl class="grid gap-4 text-sm sm:grid-cols-2">
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Cliente</dt>
+              <dd>
+                <a [routerLink]="['/panel/clientes', r.clienteId]" class="font-medium underline">
+                  {{ r.clienteNombre }}
+                </a>
+              </dd>
+            </div>
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Vehículo</dt>
+              <dd>
+                <a [routerLink]="['/panel/vehiculos', r.vehiculoId]" class="font-medium underline">
+                  {{ r.vehiculo }}
+                </a>
+              </dd>
+            </div>
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Reservada</dt>
+              <dd>{{ formatearFecha(r.fechaReserva) }}</dd>
+            </div>
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Vence</dt>
+              <dd>{{ formatearFecha(r.fechaVencimiento) }}</dd>
+            </div>
+            @if (r.cotizacionId) {
+              <div class="flex flex-col gap-1">
+                <dt class="text-fg-muted">Cotización</dt>
+                <dd>
+                  <a [routerLink]="['/panel/cotizaciones', r.cotizacionId]" class="underline">
+                    #{{ r.cotizacionId }}
+                  </a>
+                </dd>
+              </div>
+            }
+            @if (r.motivoAnulacion) {
+              <div class="flex flex-col gap-1 sm:col-span-2">
+                <dt class="text-fg-muted">Motivo de la anulación</dt>
+                <dd>{{ r.motivoAnulacion }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <aside class="tarjeta flex flex-col gap-4 p-6">
+          <h2 class="text-h4">Seña</h2>
+          <span class="text-price">{{ formatearPrecio(r.montoAnticipo) }}</span>
+          @if (r.estado === 'ACTIVA') {
+            <p class="text-sm text-fg-secondary">Se descuenta del saldo al registrar la venta.</p>
+            <a
+              routerLink="/panel/ventas/nueva"
+              [queryParams]="{
+                clienteId: r.clienteId,
+                vehiculoId: r.vehiculoId,
+                cotizacionId: r.cotizacionId,
+              }"
+              class="boton boton-primario w-full"
+            >
+              Registrar la venta
+            </a>
+            @if (esAdmin()) {
+              @if (!anulando()) {
+                <button
+                  type="button"
+                  class="boton boton-peligro w-full"
+                  (click)="anulando.set(true)"
+                >
+                  Anular reserva
+                </button>
+              } @else {
+                <div class="flex flex-col gap-2 border-t border-line pt-4">
+                  <label for="motivo" class="etiqueta">Motivo</label>
+                  <textarea
+                    id="motivo"
+                    rows="2"
+                    maxlength="500"
+                    class="campo"
+                    [value]="motivo()"
+                    (input)="motivo.set($any($event.target).value)"
+                  ></textarea>
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      class="boton boton-secundario flex-1"
+                      (click)="anulando.set(false)"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      class="boton boton-peligro flex-1"
+                      [disabled]="guardando() || !motivo().trim()"
+                      (click)="anular()"
+                    >
+                      Anular
+                    </button>
+                  </div>
+                </div>
+              }
+            }
+          }
+        </aside>
+      </div>
+    } @else {
+      <!-- Alta -->
+      <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+        <section class="tarjeta flex flex-col gap-5 p-6 lg:col-span-2">
+          <div class="flex flex-col gap-2">
+            <span class="etiqueta">Cliente</span>
+            <app-buscador
+              etiqueta="Cliente"
+              placeholder="Buscar por nombre, email o documento"
+              vacio="No hay clientes con esa búsqueda."
+              [buscar]="buscarClientes"
+              [principal]="nombreCliente"
+              [secundario]="detalleCliente"
+              [invalido]="intento() && !!errores()['cliente']"
+              [(seleccionado)]="cliente"
+            />
+            @if (intento() && errores()['cliente']; as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2">
+            <span class="etiqueta">Vehículo</span>
+            <app-buscador
+              etiqueta="Vehículo"
+              placeholder="Buscar por marca, modelo o VIN"
+              vacio="No hay vehículos disponibles con esa búsqueda."
+              [buscar]="buscarVehiculos"
+              [principal]="nombreVehiculo"
+              [secundario]="detalleVehiculo"
+              [invalido]="intento() && !!errores()['vehiculo']"
+              [(seleccionado)]="vehiculo"
+            />
+            @if (intento() && errores()['vehiculo']; as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          @if (cotizacionesVigentes().length) {
+            <div class="flex flex-col gap-2">
+              <label for="cotizacion" class="etiqueta">Cotización</label>
+              <select
+                id="cotizacion"
+                class="campo"
+                (change)="cotizacionElegida.set(numero($any($event.target).value) || null)"
+              >
+                <option value="" [selected]="!cotizacionElegida()">
+                  Sin cotización (precio de lista)
+                </option>
+                @for (c of cotizacionesVigentes(); track c.id) {
+                  <option [value]="c.id" [selected]="cotizacionElegida() === c.id">
+                    #{{ c.id }} · {{ formatearPrecio(c.precioFinal ?? c.precioLista) }}
+                  </option>
+                }
+              </select>
+              <p class="text-xs text-fg-muted">Al reservar con una cotización, queda aceptada.</p>
+            </div>
+          }
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div class="flex flex-col gap-2">
+              <label for="sena" class="etiqueta">Seña ($)</label>
+              <input
+                id="sena"
+                type="number"
+                min="1"
+                class="campo"
+                [class.campo-invalido]="intento() && errores()['sena']"
+                [value]="sena() || ''"
+                (input)="sena.set(numero($any($event.target).value))"
+              />
+              @if (intento() && errores()['sena']; as e) {
+                <p class="error-campo">{{ e }}</p>
+              } @else if (vehiculo()) {
+                <p class="text-xs text-fg-muted">
+                  Mínimo {{ formatearPrecio(minimo()) }} ({{ porcentajeSena }} % de
+                  {{ formatearPrecio(precioBase()) }}).
+                </p>
+              }
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="dias" class="etiqueta">Días de reserva</label>
+              <input
+                id="dias"
+                type="number"
+                min="1"
+                [max]="diasMaximo"
+                class="campo"
+                [class.campo-invalido]="intento() && errores()['dias']"
+                [value]="dias()"
+                (input)="dias.set(numero($any($event.target).value))"
+              />
+              @if (intento() && errores()['dias']; as e) {
+                <p class="error-campo">{{ e }}</p>
+              } @else {
+                <p class="text-xs text-fg-muted">
+                  Hasta {{ diasMaximo }}. Al vencer, el auto se libera solo.
+                </p>
+              }
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-3 border-t border-line pt-4">
+            <a routerLink="/panel/ventas" class="boton boton-secundario">Cancelar</a>
+            <button
+              type="button"
+              class="boton boton-primario"
+              [disabled]="guardando()"
+              (click)="reservar()"
+            >
+              {{ guardando() ? 'Reservando…' : 'Reservar' }}
+            </button>
+          </div>
+        </section>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,205 @@
+<div class="flex flex-col gap-6">
+  <a
+    routerLink="/panel/ventas"
+    class="inline-flex w-fit items-center gap-1 text-sm font-medium text-fg-secondary hover:text-fg"
+  >
+    <app-icono nombre="flecha-izquierda" class="size-4" />
+    Ventas
+  </a>
+
+  @if (errorCarga(); as mensaje) {
+    <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
+      <p class="font-medium">{{ mensaje }}</p>
+      <a routerLink="/panel/ventas" class="boton boton-secundario">Volver a ventas</a>
+    </div>
+  } @else if (venta(); as v) {
+    <header class="flex flex-wrap items-center gap-3">
+      <h1 class="text-h2">Venta {{ v.numeroComprobante }}</h1>
+      <app-etiqueta [tono]="estadoVenta[v.estado].tono">{{
+        estadoVenta[v.estado].texto
+      }}</app-etiqueta>
+    </header>
+
+    @if (aviso(); as mensaje) {
+      <div
+        role="status"
+        class="flex items-center gap-2 rounded-md bg-success-bg px-4 py-3 text-sm text-success"
+      >
+        <app-icono nombre="check" class="size-4" />
+        {{ mensaje }}
+      </div>
+    }
+    @if (error(); as mensaje) {
+      <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+        {{ mensaje }}
+      </div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+      <div class="flex flex-col gap-6 lg:col-span-2">
+        <section class="tarjeta flex flex-col gap-5 p-6">
+          <h2 class="text-h4">Datos</h2>
+          <dl class="grid gap-4 text-sm sm:grid-cols-2">
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Cliente</dt>
+              <dd>
+                <a [routerLink]="['/panel/clientes', v.clienteId]" class="font-medium underline">
+                  {{ v.clienteNombre }}
+                </a>
+              </dd>
+            </div>
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Vehículo</dt>
+              <dd>
+                <a [routerLink]="['/panel/vehiculos', v.vehiculoId]" class="font-medium underline">
+                  {{ v.vehiculo }}
+                </a>
+              </dd>
+            </div>
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Vendedor</dt>
+              <dd>{{ v.vendedorNombre }}</dd>
+            </div>
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Fecha</dt>
+              <dd>{{ formatearFecha(v.fechaVenta) }}</dd>
+            </div>
+            <div class="flex flex-col gap-1">
+              <dt class="text-fg-muted">Forma de pago</dt>
+              <dd>
+                {{ formaPago[v.formaPago] }}
+                @if (v.planNombre) {
+                  · {{ v.planNombre }}
+                }
+              </dd>
+            </div>
+            @if (v.cotizacionId) {
+              <div class="flex flex-col gap-1">
+                <dt class="text-fg-muted">Cotización</dt>
+                <dd>
+                  <a [routerLink]="['/panel/cotizaciones', v.cotizacionId]" class="underline">
+                    #{{ v.cotizacionId }}
+                  </a>
+                </dd>
+              </div>
+            }
+            @if (v.vehiculoTradeInId) {
+              <div class="flex flex-col gap-1">
+                <dt class="text-fg-muted">Auto recibido</dt>
+                <dd>
+                  <a [routerLink]="['/panel/vehiculos', v.vehiculoTradeInId]" class="underline">
+                    Ingresó al inventario
+                  </a>
+                </dd>
+              </div>
+            }
+            @if (v.motivoAnulacion) {
+              <div class="flex flex-col gap-1 sm:col-span-2">
+                <dt class="text-fg-muted">Motivo de la anulación</dt>
+                <dd>{{ v.motivoAnulacion }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        @if (v.comision; as c) {
+          <section class="tarjeta flex flex-wrap items-center justify-between gap-3 p-6 text-sm">
+            <div class="flex flex-col gap-1">
+              <h2 class="text-h4">Comisión del vendedor</h2>
+              <p class="text-fg-muted">{{ c.porcentaje }} % del precio final</p>
+            </div>
+            <span class="font-display text-h4">{{ formatearPrecio(c.monto) }}</span>
+          </section>
+        }
+      </div>
+
+      <aside class="tarjeta flex flex-col gap-4 p-6">
+        <h2 class="text-h4">Montos</h2>
+        <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-sm">
+          <dt class="text-fg-muted">Precio del vehículo</dt>
+          <dd class="text-right">{{ formatearPrecio(v.precioVehiculo) }}</dd>
+          <dt class="text-fg-muted">Descuento</dt>
+          <dd class="text-right">{{ v.descuento ? '− ' + formatearPrecio(v.descuento) : '—' }}</dd>
+          <dt class="font-medium">Precio final</dt>
+          <dd class="text-right font-medium">{{ formatearPrecio(v.precioFinal) }}</dd>
+          <dt class="text-fg-muted">Auto usado</dt>
+          <dd class="text-right">
+            {{ v.valorTradeIn ? '− ' + formatearPrecio(v.valorTradeIn) : '—' }}
+          </dd>
+          <dt class="text-fg-muted">Seña</dt>
+          <dd class="text-right">
+            {{ v.montoAnticipoReserva ? '− ' + formatearPrecio(v.montoAnticipoReserva) : '—' }}
+          </dd>
+        </dl>
+        <div class="flex items-baseline justify-between border-t border-line pt-3">
+          <span class="text-sm font-medium">Saldo</span>
+          <span class="text-price">{{ formatearPrecio(v.saldoAPagar) }}</span>
+        </div>
+        @if (v.formaPago === 'FINANCIADA') {
+          <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 border-t border-line pt-3 text-sm">
+            <dt class="text-fg-muted">Entrega en efectivo</dt>
+            <dd class="text-right">{{ formatearPrecio(v.entregaEfectivo ?? 0) }}</dd>
+            <dt class="text-fg-muted">Financiado</dt>
+            <dd class="text-right">{{ formatearPrecio(v.montoFinanciado ?? 0) }}</dd>
+            <dt class="text-fg-muted">Cuotas</dt>
+            <dd class="text-right">
+              {{ v.cantidadCuotas }} × {{ formatearPrecio(v.valorCuota ?? 0) }}
+            </dd>
+          </dl>
+        }
+
+        <button
+          type="button"
+          class="boton boton-secundario w-full"
+          [disabled]="ocupado()"
+          (click)="descargarComprobante()"
+        >
+          Descargar comprobante (PDF)
+        </button>
+
+        @if (esAdmin() && v.estado === 'CONFIRMADA') {
+          @if (!anulando()) {
+            <button type="button" class="boton boton-peligro w-full" (click)="anulando.set(true)">
+              Anular venta
+            </button>
+          } @else {
+            <div class="flex flex-col gap-2 border-t border-line pt-4">
+              <label for="motivo" class="etiqueta">Motivo</label>
+              <textarea
+                id="motivo"
+                rows="2"
+                maxlength="500"
+                class="campo"
+                [value]="motivo()"
+                (input)="motivo.set($any($event.target).value)"
+              ></textarea>
+              <p class="text-xs text-fg-muted">
+                El vehículo vuelve a estar disponible, se anula la comisión y, si hubo auto usado,
+                sale del inventario.
+              </p>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="boton boton-secundario flex-1"
+                  (click)="anulando.set(false)"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  class="boton boton-peligro flex-1"
+                  [disabled]="ocupado() || !motivo().trim()"
+                  (click)="anular()"
+                >
+                  Anular
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </aside>
+    </div>
+  } @else {
+    <p class="py-14 text-center text-fg-muted">Cargando venta…</p>
+  }
+</div>

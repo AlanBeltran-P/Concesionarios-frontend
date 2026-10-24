@@ -1,4 +1,4 @@
-import { descuentoMaximo, precioFinal, tasacionUtilizable } from './logic';
+import { cuentaVenta, descuentoMaximo, precioFinal, senaMinima, tasacionUtilizable } from './logic';
 import { Tasacion } from './model';
 
 describe('reglas de precio', () => {
@@ -22,5 +22,38 @@ describe('tasacionUtilizable', () => {
     expect(tasacionUtilizable(t('ACEPTADA', '2026-10-23'), '2026-10-24')).toBe(false);
     expect(tasacionUtilizable(t('RECHAZADA', null), '2026-10-24')).toBe(false);
     expect(tasacionUtilizable(t('UTILIZADA', null), '2026-10-24')).toBe(false);
+  });
+});
+
+describe('cuentaVenta', () => {
+  it('con seña y financiación: el anticipo mínimo del plan limita lo financiable', () => {
+    const c = cuentaVenta({
+      precioLista: 30_000_000,
+      descuento: 1_000_000,
+      valorTradeIn: 0,
+      sena: 2_000_000,
+      financiado: 20_300_000,
+      anticipoMinimoPlan: 30,
+    });
+    expect(c.precioFinal).toBe(29_000_000);
+    expect(c.saldo).toBe(27_000_000);
+    expect(c.maximoFinanciable).toBe(20_300_000);
+    expect(c.entrega).toBe(6_700_000);
+  });
+
+  it('sin plan se puede financiar hasta el saldo', () => {
+    const c = cuentaVenta({
+      precioLista: 20_000_000,
+      descuento: 0,
+      valorTradeIn: 15_000_000,
+      sena: 0,
+      financiado: 0,
+      anticipoMinimoPlan: null,
+    });
+    expect(c.maximoFinanciable).toBe(5_000_000);
+  });
+
+  it('seña mínima del 5 %', () => {
+    expect(senaMinima(29_000_000)).toBe(1_450_000);
   });
 });
