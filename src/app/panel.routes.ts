@@ -177,6 +177,15 @@ SECCIONES['reportes'] = [
   },
 ];
 
+SECCIONES['usuarios'] = [
+  {
+    path: '',
+    title: 'Usuarios · Concesionaria',
+    loadComponent: () =>
+      import('../features/auth/components/usuarios/usuarios').then((m) => m.Usuarios),
+  },
+];
+
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },

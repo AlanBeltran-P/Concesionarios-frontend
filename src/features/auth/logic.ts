@@ -32,3 +32,18 @@ export const invitadoGuard: CanActivateFn = () => {
 export function destinoDespuesDelLogin(redirect: string | undefined): string {
   return redirect?.startsWith('/') && !redirect.startsWith('//') ? redirect : '/';
 }
+
+/** Misma regla que @PasswordSegura del backend. Devuelve el error o null. */
+export function errorDePassword(password: string): string | null {
+  if (password.length < 8 || password.length > 72)
+    return 'Tiene que tener entre 8 y 72 caracteres.';
+  if (!/[A-Za-z]/.test(password) || !/\d/.test(password))
+    return 'Tiene que tener al menos una letra y un número.';
+  return null;
+}
+
+export const NOMBRE_ROL: Record<Rol, string> = {
+  ADMIN: 'Administrador',
+  VENDEDOR: 'Vendedor',
+  CLIENTE: 'Cliente',
+};

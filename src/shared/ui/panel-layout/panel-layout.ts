@@ -2,7 +2,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { Icono } from '../icono/icono';
-import { NOMBRE_ROL, menuParaRol } from './menu';
+import { NOMBRE_ROL } from '../../../features/auth/logic';
+import { menuParaRol } from './menu';
 
 /** Estructura del panel de gestión: menú lateral oscuro y el contenido de cada sección a la derecha. */
 @Component({

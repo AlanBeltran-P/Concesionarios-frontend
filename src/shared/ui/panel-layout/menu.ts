@@ -55,9 +55,3 @@ export function menuParaRol(rol: Rol | undefined): SeccionMenu[] {
     items: s.items.filter((i) => i.roles.includes(rol)),
   })).filter((s) => s.items.length > 0);
 }
-
-export const NOMBRE_ROL: Record<Rol, string> = {
-  ADMIN: 'Administrador',
-  VENDEDOR: 'Vendedor',
-  CLIENTE: 'Cliente',
-};

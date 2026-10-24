@@ -1,0 +1,235 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-h2">Usuarios</h1>
+      <p class="text-sm text-fg-muted">
+        Empleados y clientes con cuenta. Los clientes se registran solos desde el portal.
+      </p>
+    </div>
+    @if (!creando()) {
+      <button type="button" class="boton boton-primario" (click)="abrirAlta()">
+        <app-icono nombre="mas" class="size-[18px]" />
+        Nuevo empleado
+      </button>
+    }
+  </header>
+
+  @if (aviso(); as mensaje) {
+    <div
+      role="status"
+      class="flex items-center gap-2 rounded-md bg-success-bg px-4 py-3 text-sm text-success"
+    >
+      <app-icono nombre="check" class="size-4" />
+      {{ mensaje }}
+    </div>
+  }
+  @if (error(); as mensaje) {
+    <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">{{ mensaje }}</p>
+  }
+
+  @if (creando()) {
+    <form
+      class="tarjeta flex flex-col gap-5 p-6"
+      novalidate
+      (submit)="$event.preventDefault(); crear()"
+    >
+      <h2 class="text-h4">Nuevo empleado</h2>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="flex flex-col gap-2">
+          <label for="u-nombre" class="etiqueta">Nombre</label>
+          <input
+            id="u-nombre"
+            type="text"
+            maxlength="80"
+            class="campo"
+            [class.campo-invalido]="intento() && errores()['nombre']"
+            [value]="nombre()"
+            (input)="nombre.set($any($event.target).value)"
+          />
+          @if (intento() && errores()['nombre']; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="u-apellido" class="etiqueta">Apellido</label>
+          <input
+            id="u-apellido"
+            type="text"
+            maxlength="80"
+            class="campo"
+            [class.campo-invalido]="intento() && errores()['apellido']"
+            [value]="apellido()"
+            (input)="apellido.set($any($event.target).value)"
+          />
+          @if (intento() && errores()['apellido']; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="u-email" class="etiqueta">Email</label>
+          <input
+            id="u-email"
+            type="email"
+            maxlength="150"
+            autocomplete="off"
+            class="campo"
+            [class.campo-invalido]="intento() && errores()['email']"
+            [value]="email()"
+            (input)="email.set($any($event.target).value)"
+          />
+          @if (intento() && errores()['email']; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="u-password" class="etiqueta">Contraseña inicial</label>
+          <div class="relative">
+            <input
+              id="u-password"
+              [type]="verPassword() ? 'text' : 'password'"
+              autocomplete="new-password"
+              class="campo pr-24"
+              [class.campo-invalido]="intento() && errores()['password']"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+            />
+            <button
+              type="button"
+              class="absolute top-1/2 right-2 -translate-y-1/2 rounded-sm px-2 py-1 text-xs font-medium text-fg-secondary hover:text-fg"
+              (click)="verPassword.set(!verPassword())"
+            >
+              {{ verPassword() ? 'Ocultar' : 'Mostrar' }}
+            </button>
+          </div>
+          @if (intento() && errores()['password']; as e) {
+            <p class="error-campo">{{ e }}</p>
+          } @else {
+            <p class="text-xs text-fg-muted">
+              8 caracteres o más, con letras y números. Pasásela al empleado.
+            </p>
+          }
+        </div>
+        <fieldset class="flex flex-col gap-2 sm:col-span-2">
+          <legend class="etiqueta pb-2">Rol</legend>
+          <div class="grid grid-cols-2 gap-1 rounded-md bg-subtle p-1 sm:w-80">
+            @for (r of ['VENDEDOR', 'ADMIN']; track r) {
+              <button
+                type="button"
+                class="h-9 rounded-[7px] text-sm font-medium transition"
+                [class.bg-surface]="rolNuevo() === r"
+                [class.shadow-sm]="rolNuevo() === r"
+                [class.text-fg]="rolNuevo() === r"
+                [class.text-fg-secondary]="rolNuevo() !== r"
+                [attr.aria-pressed]="rolNuevo() === r"
+                (click)="rolNuevo.set($any(r))"
+              >
+                {{ r === 'ADMIN' ? 'Administrador' : 'Vendedor' }}
+              </button>
+            }
+          </div>
+        </fieldset>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-line pt-4">
+        <button type="button" class="boton boton-secundario" (click)="creando.set(false)">
+          Cancelar
+        </button>
+        <button type="submit" class="boton boton-primario" [disabled]="ocupado()">
+          Crear empleado
+        </button>
+      </div>
+    </form>
+  }
+
+  <section class="tarjeta flex flex-col gap-3 p-4 sm:flex-row sm:items-center" aria-label="Filtros">
+    <label class="relative flex-1">
+      <span class="sr-only">Buscar</span>
+      <app-icono
+        nombre="buscar"
+        class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-muted"
+      />
+      <input
+        type="search"
+        class="campo pl-10"
+        placeholder="Buscar por nombre o email"
+        [value]="texto()"
+        (input)="buscar($any($event.target).value)"
+      />
+    </label>
+    <div class="grid grid-cols-2 gap-3">
+      <label>
+        <span class="sr-only">Rol</span>
+        <select class="campo sm:w-44" (change)="filtrarRol($any($event.target).value)">
+          <option value="" [selected]="!rol()">Todos los roles</option>
+          <option value="ADMIN" [selected]="rol() === 'ADMIN'">Administradores</option>
+          <option value="VENDEDOR" [selected]="rol() === 'VENDEDOR'">Vendedores</option>
+          <option value="CLIENTE" [selected]="rol() === 'CLIENTE'">Clientes</option>
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Estado</span>
+        <select class="campo sm:w-40" (change)="filtrarEstado($any($event.target).value)">
+          <option value="" [selected]="activo() === undefined">Activos e inactivos</option>
+          <option value="true" [selected]="activo() === true">Activos</option>
+          <option value="false" [selected]="activo() === false">Inactivos</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  @if (errorCarga(); as mensaje) {
+    <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">{{ mensaje }}</p>
+  } @else {
+    <section class="tarjeta overflow-hidden" aria-label="Usuarios" [attr.aria-busy]="cargando()">
+      <ul class="divide-y divide-line" [class.opacity-60]="cargando()">
+        @for (u of datos()?.content ?? []; track u.id) {
+          <li class="flex flex-wrap items-center gap-3 px-5 py-3.5">
+            <div class="flex w-full min-w-0 flex-col sm:w-auto sm:flex-1">
+              <span class="font-medium" [class.text-fg-muted]="!u.activo">
+                {{ u.apellido }}, {{ u.nombre }}
+                @if (u.id === miId()) {
+                  <span class="ml-1 text-xs font-normal text-fg-muted">(vos)</span>
+                }
+              </span>
+              <span class="truncate text-xs text-fg-muted">
+                {{ u.email }} · desde el {{ formatearFecha(u.fechaCreacion) }}
+              </span>
+            </div>
+            @if (!u.activo) {
+              <app-etiqueta>Inactivo</app-etiqueta>
+            }
+            @if (u.rol === 'CLIENTE') {
+              <app-etiqueta tono="info">Cliente</app-etiqueta>
+            } @else {
+              <label>
+                <span class="sr-only">Rol de {{ u.nombre }}</span>
+                <select
+                  class="campo h-9 w-40"
+                  [disabled]="ocupado() || u.id === miId()"
+                  (change)="cambiarRol(u, $any($event.target).value)"
+                >
+                  <option value="VENDEDOR" [selected]="u.rol === 'VENDEDOR'">Vendedor</option>
+                  <option value="ADMIN" [selected]="u.rol === 'ADMIN'">Administrador</option>
+                </select>
+              </label>
+            }
+            <button
+              type="button"
+              class="boton h-9 w-28"
+              [class.boton-peligro]="u.activo"
+              [class.boton-secundario]="!u.activo"
+              [disabled]="ocupado() || u.id === miId()"
+              (click)="cambiarEstado(u)"
+            >
+              {{ u.activo ? 'Desactivar' : 'Activar' }}
+            </button>
+          </li>
+        } @empty {
+          <li class="px-5 py-14 text-center text-fg-muted">
+            {{ cargando() ? 'Cargando usuarios…' : 'No hay usuarios con esos filtros.' }}
+          </li>
+        }
+      </ul>
+      <app-paginado [info]="datos()?.page" (cambiar)="pagina.set($event)" />
+    </section>
+  }
+</div>
