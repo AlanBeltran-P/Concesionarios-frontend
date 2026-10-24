@@ -1,0 +1,196 @@
+<div class="flex flex-col gap-4">
+  @if (faltanDatos()) {
+    <p class="rounded-md bg-info-bg px-4 py-3 text-sm text-info">
+      Para cargar un modelo primero tiene que haber al menos una marca y una categoría activas.
+    </p>
+  }
+
+  <!-- Alta -->
+  <form
+    class="tarjeta grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.5fr_auto] lg:items-start"
+    (submit)="$event.preventDefault(); agregar()"
+    novalidate
+  >
+    <div class="flex flex-col gap-1.5">
+      <label for="modelo-marca" class="sr-only">Marca</label>
+      <select
+        id="modelo-marca"
+        class="campo"
+        [class.campo-invalido]="intentoAgregar() && !marcaId()"
+        (change)="marcaId.set(numero($any($event.target).value))"
+      >
+        <option value="" [selected]="!marcaId()">Marca</option>
+        @for (m of marcasActivas(); track m.id) {
+          <option [value]="m.id" [selected]="marcaId() === m.id">{{ m.nombre }}</option>
+        }
+      </select>
+      @if (intentoAgregar() && !marcaId()) {
+        <p class="error-campo">Elegí la marca.</p>
+      }
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label for="modelo-categoria" class="sr-only">Categoría</label>
+      <select
+        id="modelo-categoria"
+        class="campo"
+        [class.campo-invalido]="intentoAgregar() && !categoriaId()"
+        (change)="categoriaId.set(numero($any($event.target).value))"
+      >
+        <option value="" [selected]="!categoriaId()">Categoría</option>
+        @for (c of categoriasActivas(); track c.id) {
+          <option [value]="c.id" [selected]="categoriaId() === c.id">{{ c.nombre }}</option>
+        }
+      </select>
+      @if (intentoAgregar() && !categoriaId()) {
+        <p class="error-campo">Elegí la categoría.</p>
+      }
+    </div>
+    <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+      <label for="modelo-nombre" class="sr-only">Nombre del modelo</label>
+      <input
+        id="modelo-nombre"
+        type="text"
+        maxlength="80"
+        class="campo"
+        [class.campo-invalido]="intentoAgregar() && !nombre().trim()"
+        placeholder="Nombre del modelo (ej. Corolla)"
+        [value]="nombre()"
+        (input)="nombre.set($any($event.target).value); intentoAgregar.set(false)"
+      />
+      @if (intentoAgregar() && !nombre().trim()) {
+        <p class="error-campo">Completá el nombre.</p>
+      }
+    </div>
+    <button
+      type="submit"
+      class="boton boton-primario h-11 sm:col-span-2 lg:col-span-1"
+      [disabled]="ocupado()"
+    >
+      Agregar modelo
+    </button>
+  </form>
+
+  @if (error(); as mensaje) {
+    <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+      {{ mensaje }}
+    </div>
+  }
+
+  <!-- Lista -->
+  <section class="tarjeta overflow-hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3">
+      <span class="text-sm text-fg-muted">
+        {{ lista().length }} {{ lista().length === 1 ? 'modelo' : 'modelos' }}
+      </span>
+      <label class="w-full sm:w-56">
+        <span class="sr-only">Filtrar por marca</span>
+        <select class="campo h-10" (change)="filtroMarca.set(numero($any($event.target).value))">
+          <option value="" [selected]="filtroMarca() === null">Todas las marcas</option>
+          @for (m of marcasConModelos(); track m.id) {
+            <option [value]="m.id" [selected]="filtroMarca() === m.id">{{ m.nombre }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (errorCarga(); as mensaje) {
+      <p class="px-5 py-10 text-center text-sm text-danger">{{ mensaje }}</p>
+    } @else if (cargando()) {
+      <p class="px-5 py-10 text-center text-sm text-fg-muted">Cargando…</p>
+    } @else {
+      <ul class="divide-y divide-line">
+        @for (m of lista(); track m.id) {
+          <li class="flex flex-wrap items-center gap-3 px-5 py-3">
+            @if (editandoId() === m.id) {
+              <select
+                class="campo h-10 w-full sm:w-40"
+                aria-label="Marca"
+                (change)="marcaEditada.set(numero($any($event.target).value))"
+              >
+                @for (op of marcasActivas(); track op.id) {
+                  <option [value]="op.id" [selected]="marcaEditada() === op.id">
+                    {{ op.nombre }}
+                  </option>
+                }
+              </select>
+              <select
+                class="campo h-10 w-full sm:w-40"
+                aria-label="Categoría"
+                (change)="categoriaEditada.set(numero($any($event.target).value))"
+              >
+                @for (op of categoriasActivas(); track op.id) {
+                  <option [value]="op.id" [selected]="categoriaEditada() === op.id">
+                    {{ op.nombre }}
+                  </option>
+                }
+              </select>
+              <input
+                type="text"
+                maxlength="80"
+                class="campo h-10 min-w-0 flex-1"
+                aria-label="Nombre"
+                [value]="nombreEditado()"
+                (input)="nombreEditado.set($any($event.target).value)"
+                (keydown.enter)="guardarEdicion(m.id)"
+                (keydown.escape)="cancelarEdicion()"
+              />
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="boton boton-secundario h-9"
+                  (click)="cancelarEdicion()"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  class="boton boton-primario h-9"
+                  [disabled]="ocupado() || !nombreEditado().trim()"
+                  (click)="guardarEdicion(m.id)"
+                >
+                  Guardar
+                </button>
+              </div>
+            } @else {
+              <div class="flex min-w-0 flex-1 flex-col">
+                <span class="font-medium" [class.text-fg-muted]="!m.activo">
+                  {{ m.marcaNombre }} {{ m.nombre }}
+                </span>
+                <span class="text-xs text-fg-muted">{{ m.categoriaNombre }}</span>
+              </div>
+              @if (!m.activo) {
+                <span class="rounded-full bg-subtle px-2.5 py-1 text-xs font-medium text-fg-muted">
+                  Desactivado
+                </span>
+              }
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="boton boton-secundario h-9"
+                  [disabled]="ocupado()"
+                  (click)="editar(m)"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="boton h-9"
+                  [class.boton-peligro]="m.activo"
+                  [class.boton-secundario]="!m.activo"
+                  [disabled]="ocupado()"
+                  (click)="cambiarActivo(m)"
+                >
+                  {{ m.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </div>
+            }
+          </li>
+        } @empty {
+          <li class="px-5 py-10 text-center text-sm text-fg-muted">
+            {{ filtroMarca() ? 'Esa marca no tiene modelos.' : 'Todavía no hay modelos cargados.' }}
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

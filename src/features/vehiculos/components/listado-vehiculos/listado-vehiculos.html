@@ -4,10 +4,15 @@
       <h1 class="text-h2">Vehículos</h1>
       <p class="text-sm text-fg-muted">Inventario de la concesionaria</p>
     </div>
-    <a routerLink="nuevo" class="boton boton-primario">
-      <app-icono nombre="mas" class="size-[18px]" />
-      Nuevo vehículo
-    </a>
+    <div class="flex flex-wrap gap-3">
+      @if (esAdmin()) {
+        <a routerLink="catalogo" class="boton boton-secundario">Marcas y modelos</a>
+      }
+      <a routerLink="nuevo" class="boton boton-primario">
+        <app-icono nombre="mas" class="size-[18px]" />
+        Nuevo vehículo
+      </a>
+    </div>
   </header>
 
   <!-- Filtros -->

@@ -34,6 +34,15 @@ const SECCIONES: Record<string, Routes> = {
         ),
     },
     {
+      path: 'catalogo',
+      title: 'Marcas, modelos y categorías · Concesionaria',
+      canActivate: [rolGuard('ADMIN')],
+      loadComponent: () =>
+        import('../features/vehiculos/components/catalogo-vehiculos/catalogo-vehiculos').then(
+          (m) => m.CatalogoVehiculos,
+        ),
+    },
+    {
       path: ':id',
       title: 'Vehículo · Concesionaria',
       loadComponent: () =>

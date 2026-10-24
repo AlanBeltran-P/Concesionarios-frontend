@@ -7,6 +7,7 @@ import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
 import { ETIQUETA_CONDICION, ETIQUETA_ESTADO, OPCIONES_ORDEN } from '../../logic';
 import { CondicionVehiculo, EstadoVehiculo, FiltroVehiculos, OrdenVehiculos } from '../../model';
+import { AuthService } from '../../../auth/services/auth.service';
 import { VehiculosService } from '../../services/vehiculos.service';
 import { EstadoBadge } from '../estado-badge/estado-badge';
 
@@ -20,6 +21,8 @@ const POR_PAGINA = 12;
 })
 export class ListadoVehiculos {
   private readonly servicio = inject(VehiculosService);
+  private readonly auth = inject(AuthService);
+  protected readonly esAdmin = computed(() => this.auth.usuario()?.rol === 'ADMIN');
 
   protected readonly formatearPrecio = formatearPrecio;
   protected readonly formatearKm = formatearKm;

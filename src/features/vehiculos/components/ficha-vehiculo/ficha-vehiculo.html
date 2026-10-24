@@ -72,6 +72,18 @@
             @if (errorDe('marcaId'); as e) {
               <p class="error-campo">{{ e }}</p>
             }
+            @if (listaMarcas()?.length === 0) {
+              <p class="text-xs text-fg-muted">
+                No hay marcas cargadas.
+                @if (esAdmin()) {
+                  <a routerLink="/panel/vehiculos/catalogo" class="font-medium text-fg underline"
+                    >Cargalas acá</a
+                  >.
+                } @else {
+                  Pedile a un administrador que las cargue.
+                }
+              </p>
+            }
           </div>
 
           <div class="flex flex-col gap-2">

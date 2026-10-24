@@ -1,0 +1,142 @@
+<div class="flex flex-col gap-4">
+  <!-- Alta -->
+  <form
+    class="tarjeta flex flex-col gap-3 p-4 sm:flex-row sm:items-start"
+    (submit)="$event.preventDefault(); agregar()"
+    novalidate
+  >
+    <div class="flex flex-1 flex-col gap-1.5">
+      <label [for]="tipo() + '-nombre'" class="sr-only">Nombre</label>
+      <input
+        [id]="tipo() + '-nombre'"
+        type="text"
+        maxlength="60"
+        class="campo"
+        [class.campo-invalido]="intentoAgregar() && !nombre().trim()"
+        [placeholder]="'Nombre de la ' + textos().singular + ' (ej. ' + textos().ejemplo + ')'"
+        [value]="nombre()"
+        (input)="nombre.set($any($event.target).value); intentoAgregar.set(false)"
+      />
+      @if (intentoAgregar() && !nombre().trim()) {
+        <p class="error-campo">Completá el nombre.</p>
+      }
+    </div>
+    @if (conDescripcion()) {
+      <div class="flex flex-1 flex-col">
+        <label [for]="tipo() + '-descripcion'" class="sr-only">Descripción</label>
+        <input
+          [id]="tipo() + '-descripcion'"
+          type="text"
+          maxlength="255"
+          class="campo"
+          placeholder="Descripción (opcional)"
+          [value]="descripcion()"
+          (input)="descripcion.set($any($event.target).value)"
+        />
+      </div>
+    }
+    <button type="submit" class="boton boton-primario h-11" [disabled]="ocupado()">
+      {{ textos().agregar }}
+    </button>
+  </form>
+
+  @if (error(); as mensaje) {
+    <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+      {{ mensaje }}
+    </div>
+  }
+
+  <!-- Lista -->
+  <section class="tarjeta overflow-hidden">
+    @if (errorCarga(); as mensaje) {
+      <p class="px-5 py-10 text-center text-sm text-danger">{{ mensaje }}</p>
+    } @else if (cargando()) {
+      <p class="px-5 py-10 text-center text-sm text-fg-muted">Cargando…</p>
+    } @else {
+      <ul class="divide-y divide-line">
+        @for (item of lista(); track item.id) {
+          <li class="flex flex-wrap items-center gap-3 px-5 py-3">
+            @if (editandoId() === item.id) {
+              <input
+                type="text"
+                maxlength="60"
+                class="campo h-10 min-w-0 flex-1"
+                aria-label="Nombre"
+                [value]="nombreEditado()"
+                (input)="nombreEditado.set($any($event.target).value)"
+                (keydown.enter)="guardarEdicion(item.id)"
+                (keydown.escape)="cancelarEdicion()"
+              />
+              @if (conDescripcion()) {
+                <input
+                  type="text"
+                  maxlength="255"
+                  class="campo h-10 min-w-0 flex-1"
+                  aria-label="Descripción"
+                  placeholder="Descripción (opcional)"
+                  [value]="descripcionEditada()"
+                  (input)="descripcionEditada.set($any($event.target).value)"
+                  (keydown.enter)="guardarEdicion(item.id)"
+                  (keydown.escape)="cancelarEdicion()"
+                />
+              }
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="boton boton-secundario h-9"
+                  (click)="cancelarEdicion()"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  class="boton boton-primario h-9"
+                  [disabled]="ocupado() || !nombreEditado().trim()"
+                  (click)="guardarEdicion(item.id)"
+                >
+                  Guardar
+                </button>
+              </div>
+            } @else {
+              <div class="flex min-w-0 flex-1 flex-col">
+                <span class="font-medium" [class.text-fg-muted]="!item.activo">{{
+                  item.nombre
+                }}</span>
+                @if (conDescripcion() && item.descripcion) {
+                  <span class="truncate text-xs text-fg-muted">{{ item.descripcion }}</span>
+                }
+              </div>
+              @if (!item.activo) {
+                <span class="rounded-full bg-subtle px-2.5 py-1 text-xs font-medium text-fg-muted">
+                  Desactivada
+                </span>
+              }
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="boton boton-secundario h-9"
+                  [disabled]="ocupado()"
+                  (click)="editar(item)"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="boton h-9"
+                  [class.boton-peligro]="item.activo"
+                  [class.boton-secundario]="!item.activo"
+                  [disabled]="ocupado()"
+                  (click)="cambiarActivo(item)"
+                >
+                  {{ item.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </div>
+            }
+          </li>
+        } @empty {
+          <li class="px-5 py-10 text-center text-sm text-fg-muted">{{ textos().vacio }}</li>
+        }
+      </ul>
+    }
+  </section>
+</div>

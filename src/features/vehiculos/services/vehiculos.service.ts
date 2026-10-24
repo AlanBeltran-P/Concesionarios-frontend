@@ -69,6 +69,7 @@ export class VehiculosService {
     return this.http.post<Vehiculo>(`${this.api}/vehiculos/${id}/reactivar`, null);
   }
 
+  /** Solo las activas: son las que se pueden elegir al cargar un vehículo. */
   marcas(): Observable<Marca[]> {
     return this.http.get<Marca[]>(`${this.api}/marcas`);
   }
@@ -80,4 +81,27 @@ export class VehiculosService {
   modelos(marcaId: number): Observable<Modelo[]> {
     return this.http.get<Modelo[]>(`${this.api}/modelos`, { params: { marcaId } });
   }
+
+  // Administración de marcas, modelos y categorías (solo ADMIN).
+
+  /** Todos, incluidos los desactivados. */
+  listarCatalogo<T>(tipo: TipoCatalogo): Observable<T[]> {
+    // El backend usa "incluirInactivas" para marcas y categorías e "incluirInactivos" para modelos.
+    const param = tipo === 'modelos' ? 'incluirInactivos' : 'incluirInactivas';
+    return this.http.get<T[]>(`${this.api}/${tipo}`, { params: { [param]: true } });
+  }
+
+  /** Crea si no hay id, si no actualiza. */
+  guardarEnCatalogo<T>(tipo: TipoCatalogo, id: number | undefined, datos: object): Observable<T> {
+    return id === undefined
+      ? this.http.post<T>(`${this.api}/${tipo}`, datos)
+      : this.http.put<T>(`${this.api}/${tipo}/${id}`, datos);
+  }
+
+  /** Los desactivados no se pueden elegir al cargar un vehículo, pero los que ya los usan siguen igual. */
+  activarEnCatalogo<T>(tipo: TipoCatalogo, id: number, activo: boolean): Observable<T> {
+    return this.http.patch<T>(`${this.api}/${tipo}/${id}/estado`, { activo });
+  }
 }
+
+export type TipoCatalogo = 'marcas' | 'modelos' | 'categorias';
