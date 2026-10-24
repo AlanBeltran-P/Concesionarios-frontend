@@ -1,3 +1,4 @@
-/* Estilos globales. Tailwind v4 se configura desde este archivo (@theme, @layer, etc.) */
+/* Estilos globales. El tema (colores, fuentes, radios, sombras) está en shared/styles/theme.css */
 
 @import 'tailwindcss';
+@import './shared/styles/theme.css';
