@@ -1,0 +1,158 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-h2">Dashboard</h1>
+      <p class="text-sm text-fg-muted">
+        @if (datos(); as d) {
+          Del {{ formatearFecha(d.desde) }} al {{ formatearFecha(d.hasta) }}
+        } @else {
+          Resumen de la concesionaria
+        }
+      </p>
+    </div>
+    <nav class="flex gap-1 rounded-md bg-subtle p-1" aria-label="Período">
+      @for (a of atajos; track a.valor) {
+        <button
+          type="button"
+          class="rounded-[7px] px-3.5 py-2 text-sm font-medium whitespace-nowrap transition"
+          [class.bg-surface]="atajo() === a.valor"
+          [class.shadow-sm]="atajo() === a.valor"
+          [class.text-fg]="atajo() === a.valor"
+          [class.text-fg-secondary]="atajo() !== a.valor"
+          [attr.aria-pressed]="atajo() === a.valor"
+          (click)="atajo.set(a.valor)"
+        >
+          {{ a.texto }}
+        </button>
+      }
+    </nav>
+  </header>
+
+  @if (error(); as mensaje) {
+    <div
+      role="alert"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-md bg-danger-bg px-4 py-3 text-sm text-danger"
+    >
+      {{ mensaje }}
+      <button type="button" class="boton boton-secundario h-9" (click)="reintentar()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (cargando()) {
+    <p class="py-14 text-center text-fg-muted">Cargando indicadores…</p>
+  } @else if (datos(); as d) {
+    <!-- Indicadores -->
+    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Indicadores">
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Ingresos</span>
+        <span class="text-h2 font-display" [title]="formatearPrecio(d.ingresos)">
+          {{ precioCompacto(d.ingresos) }}
+        </span>
+        <span class="text-xs text-fg-muted"> Comisiones {{ precioCompacto(d.comisiones) }} </span>
+      </div>
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Unidades vendidas</span>
+        <span class="text-h2 font-display">{{ d.unidadesVendidas }}</span>
+        <span class="text-xs text-fg-muted">
+          Ticket promedio {{ precioCompacto(d.ticketPromedio) }}
+        </span>
+      </div>
+      <a
+        routerLink="/panel/vehiculos"
+        class="tarjeta flex flex-col gap-1 p-5 transition hover:shadow-md"
+      >
+        <span class="text-sm text-fg-muted">Stock disponible</span>
+        <span class="text-h2 font-display">{{ d.stockDisponible }}</span>
+        <span class="text-xs text-fg-muted">vehículos a la venta</span>
+      </a>
+      <a
+        routerLink="/panel/financiamiento"
+        [queryParams]="{ vista: 'vencidas' }"
+        class="tarjeta flex flex-col gap-1 p-5 transition hover:shadow-md"
+      >
+        <span class="text-sm text-fg-muted">Cartera vencida</span>
+        <span class="text-h2 font-display" [class.text-danger]="d.carteraVencida > 0">
+          {{ precioCompacto(d.carteraVencida) }}
+        </span>
+        <span
+          class="text-xs"
+          [class.text-danger]="d.clientesMorosos > 0"
+          [class.text-fg-muted]="!d.clientesMorosos"
+        >
+          {{ d.clientesMorosos }}
+          {{ d.clientesMorosos === 1 ? 'cliente moroso' : 'clientes morosos' }}
+        </span>
+      </a>
+    </section>
+
+    <!-- Ventas por mes -->
+    <section class="tarjeta flex flex-col gap-4 p-6" aria-labelledby="titulo-ventas-mes">
+      <div class="flex flex-col gap-1">
+        <h2 id="titulo-ventas-mes" class="text-h4">Ingresos por mes</h2>
+        <p class="text-sm text-fg-muted">Suma de los precios finales de las ventas confirmadas</p>
+      </div>
+      <app-grafico-columnas
+        titulo="Ingresos por mes"
+        nombreEtiqueta="Mes"
+        nombreValor="Ingresos"
+        [datos]="columnas()"
+        [formatoValor]="formatearPrecio"
+        [formatoEje]="precioCompacto"
+      />
+    </section>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <!-- Modelos más vendidos -->
+      <section class="tarjeta flex flex-col gap-4 p-6" aria-labelledby="titulo-modelos">
+        <h2 id="titulo-modelos" class="text-h4">Modelos más vendidos</h2>
+        <ol class="flex flex-col gap-4">
+          @for (m of d.topModelos; track m.modeloId) {
+            <li class="flex flex-col gap-1.5">
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="font-medium">{{ m.marca }} {{ m.modelo }}</span>
+                <span class="text-fg-secondary">
+                  {{ m.unidades }} {{ m.unidades === 1 ? 'unidad' : 'unidades' }} ·
+                  {{ precioCompacto(m.ingresos) }}
+                </span>
+              </div>
+              <div class="h-1.5 rounded-full bg-subtle" aria-hidden="true">
+                <div
+                  class="h-full rounded-full bg-primary"
+                  [style.width.%]="(m.unidades / maxModelo()) * 100"
+                ></div>
+              </div>
+            </li>
+          } @empty {
+            <li class="py-6 text-center text-sm text-fg-muted">No hubo ventas en el período.</li>
+          }
+        </ol>
+      </section>
+
+      <!-- Vendedores -->
+      <section class="tarjeta flex flex-col gap-4 p-6" aria-labelledby="titulo-vendedores">
+        <h2 id="titulo-vendedores" class="text-h4">Vendedores</h2>
+        <ol class="flex flex-col gap-4">
+          @for (v of d.topVendedores; track v.vendedorId) {
+            <li class="flex flex-col gap-1.5">
+              <div class="flex items-baseline justify-between gap-3 text-sm">
+                <span class="font-medium">{{ v.vendedorNombre }}</span>
+                <span class="text-fg-secondary">
+                  {{ v.cantidad }} {{ v.cantidad === 1 ? 'venta' : 'ventas' }} ·
+                  {{ precioCompacto(v.monto) }}
+                </span>
+              </div>
+              <div class="h-1.5 rounded-full bg-subtle" aria-hidden="true">
+                <div
+                  class="h-full rounded-full bg-primary"
+                  [style.width.%]="(v.monto / maxVendedor()) * 100"
+                ></div>
+              </div>
+            </li>
+          } @empty {
+            <li class="py-6 text-center text-sm text-fg-muted">No hubo ventas en el período.</li>
+          }
+        </ol>
+      </section>
+    </div>
+  }
+</div>

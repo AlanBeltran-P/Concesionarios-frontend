@@ -43,4 +43,9 @@
   .tarjeta {
     @apply rounded-lg border border-line bg-surface;
   }
+
+  /* Para alternar etiquetas de ejes que no entran en pantallas chicas. */
+  .oculto-en-celular {
+    @apply max-sm:invisible;
+  }
 }

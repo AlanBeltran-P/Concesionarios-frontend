@@ -156,6 +156,27 @@ SECCIONES['comisiones'] = [
   },
 ];
 
+SECCIONES['dashboard'] = [
+  {
+    path: '',
+    title: 'Dashboard · Concesionaria',
+    loadComponent: () =>
+      import('../features/reportes/components/dashboard/dashboard').then(
+        (m) => m.DashboardComponent,
+      ),
+  },
+];
+SECCIONES['reportes'] = [
+  {
+    path: '',
+    title: 'Reportes · Concesionaria',
+    loadComponent: () =>
+      import('../features/reportes/components/seccion-reportes/seccion-reportes').then(
+        (m) => m.SeccionReportes,
+      ),
+  },
+];
+
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },
