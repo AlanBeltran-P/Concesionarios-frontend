@@ -53,6 +53,33 @@ const SECCIONES: Record<string, Routes> = {
   ],
 };
 
+SECCIONES['clientes'] = [
+  {
+    path: '',
+    title: 'Clientes · Concesionaria',
+    loadComponent: () =>
+      import('../features/clientes/components/listado-clientes/listado-clientes').then(
+        (m) => m.ListadoClientes,
+      ),
+  },
+  {
+    path: 'nuevo',
+    title: 'Nuevo cliente · Concesionaria',
+    loadComponent: () =>
+      import('../features/clientes/components/ficha-cliente/ficha-cliente').then(
+        (m) => m.FichaCliente,
+      ),
+  },
+  {
+    path: ':id',
+    title: 'Cliente · Concesionaria',
+    loadComponent: () =>
+      import('../features/clientes/components/ficha-cliente/ficha-cliente').then(
+        (m) => m.FichaCliente,
+      ),
+  },
+];
+
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },

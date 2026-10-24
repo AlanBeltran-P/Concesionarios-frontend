@@ -1,0 +1,152 @@
+<section class="tarjeta flex flex-col" aria-labelledby="titulo-historial">
+  <div class="flex flex-col gap-4 border-b border-line px-6 py-5">
+    <h2 id="titulo-historial" class="text-h4">Historial</h2>
+    <div class="-mx-1 overflow-x-auto px-1">
+      <div class="flex w-max gap-1 rounded-md bg-subtle p-1" role="tablist">
+        @for (s of secciones; track s.seccion) {
+          <button
+            type="button"
+            role="tab"
+            class="flex items-center gap-2 rounded-[7px] px-3.5 py-2 text-sm font-medium whitespace-nowrap transition"
+            [class.bg-surface]="actual() === s.seccion"
+            [class.shadow-sm]="actual() === s.seccion"
+            [class.text-fg]="actual() === s.seccion"
+            [class.text-fg-secondary]="actual() !== s.seccion"
+            [attr.aria-selected]="actual() === s.seccion"
+            (click)="elegir(s.seccion)"
+          >
+            {{ s.texto }}
+            <span class="rounded-full bg-muted px-1.5 text-xs text-fg-secondary">
+              {{ cantidad(s.seccion) }}
+            </span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (error(); as mensaje) {
+    <div class="flex flex-col items-center gap-3 px-6 py-10 text-center text-sm">
+      <p class="text-danger">{{ mensaje }}</p>
+      <button type="button" class="boton boton-secundario" (click)="reintentar()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (cargando() && !historial()) {
+    <p class="px-6 py-10 text-center text-sm text-fg-muted">Cargando historial…</p>
+  } @else if (historial(); as h) {
+    @for (aviso of h.avisos; track aviso) {
+      <p class="mx-6 mt-4 rounded-md bg-warning-bg px-4 py-3 text-sm text-warning">{{ aviso }}</p>
+    }
+
+    <ul class="divide-y divide-line" role="tabpanel">
+      @switch (actual()) {
+        @case ('compras') {
+          @for (v of h.compras; track v.id) {
+            <li class="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
+              <div class="flex min-w-0 flex-col">
+                <span class="font-medium">{{ v.vehiculo }}</span>
+                <span class="text-xs text-fg-muted">
+                  {{ v.numeroComprobante }} · {{ formatearFecha(v.fechaVenta) }} ·
+                  {{ formaPago[v.formaPago] }}
+                </span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="font-display font-semibold">{{ formatearPrecio(v.precioFinal) }}</span>
+                <app-etiqueta [tono]="estadoVenta[v.estado].tono">
+                  {{ estadoVenta[v.estado].texto }}
+                </app-etiqueta>
+              </div>
+            </li>
+          } @empty {
+            <li class="px-6 py-10 text-center text-sm text-fg-muted">{{ vacio() }}</li>
+          }
+        }
+        @case ('financiamientos') {
+          @for (f of h.financiamientos; track f.id) {
+            <li class="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
+              <div class="flex min-w-0 flex-col">
+                <span class="font-medium">
+                  {{ f.plan }}: {{ f.cantidadCuotas }} cuotas de {{ formatearPrecio(f.valorCuota) }}
+                </span>
+                <span class="text-xs text-fg-muted">
+                  {{ f.numeroComprobante }} · Financiado
+                  {{ formatearPrecio(f.montoFinanciado) }}
+                </span>
+              </div>
+              <app-etiqueta [tono]="estadoFinanciamiento[f.estado].tono">
+                {{ estadoFinanciamiento[f.estado].texto }}
+              </app-etiqueta>
+            </li>
+          } @empty {
+            <li class="px-6 py-10 text-center text-sm text-fg-muted">{{ vacio() }}</li>
+          }
+        }
+        @case ('reservas') {
+          @for (r of h.reservas; track r.id) {
+            <li class="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
+              <div class="flex min-w-0 flex-col">
+                <span class="font-medium">{{ r.vehiculo }}</span>
+                <span class="text-xs text-fg-muted">
+                  Seña {{ formatearPrecio(r.montoAnticipo) }} ·
+                  {{ formatearFecha(r.fechaReserva) }} · vence
+                  {{ formatearFecha(r.fechaVencimiento) }}
+                </span>
+              </div>
+              <app-etiqueta [tono]="estadoReserva[r.estado].tono">
+                {{ estadoReserva[r.estado].texto }}
+              </app-etiqueta>
+            </li>
+          } @empty {
+            <li class="px-6 py-10 text-center text-sm text-fg-muted">{{ vacio() }}</li>
+          }
+        }
+        @case ('cotizaciones') {
+          @for (c of h.cotizaciones; track c.id) {
+            <li class="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
+              <div class="flex min-w-0 flex-col">
+                <span class="font-medium">{{ c.vehiculo }}</span>
+                <span class="text-xs text-fg-muted">
+                  Pedida el {{ formatearFecha(c.fechaSolicitud) }}
+                  @if (c.vendedorNombre) {
+                    · {{ c.vendedorNombre }}
+                  }
+                </span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="font-display font-semibold">
+                  {{ formatearPrecio(c.precioFinal ?? c.precioLista) }}
+                </span>
+                <app-etiqueta [tono]="estadoCotizacion[c.estado].tono">
+                  {{ estadoCotizacion[c.estado].texto }}
+                </app-etiqueta>
+              </div>
+            </li>
+          } @empty {
+            <li class="px-6 py-10 text-center text-sm text-fg-muted">{{ vacio() }}</li>
+          }
+        }
+        @case ('pagos') {
+          @for (p of h.pagos; track p.id) {
+            <li class="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
+              <div class="flex min-w-0 flex-col">
+                <span class="font-medium">
+                  {{ tipoPago[p.tipo] }}
+                  @if (p.numeroCuota) {
+                    {{ p.numeroCuota }}
+                  }
+                </span>
+                <span class="text-xs text-fg-muted">
+                  {{ formatearFecha(p.fechaPago) }} · {{ medioPago[p.medioPago] }}
+                </span>
+              </div>
+              <span class="font-display font-semibold">{{ formatearPrecio(p.monto) }}</span>
+            </li>
+          } @empty {
+            <li class="px-6 py-10 text-center text-sm text-fg-muted">{{ vacio() }}</li>
+          }
+        }
+      }
+    </ul>
+  }
+</section>

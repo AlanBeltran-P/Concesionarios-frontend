@@ -7,7 +7,8 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../../auth/services/auth.service';
 import { Icono } from '../../../../shared/ui/icono/icono';
 import { formatearFecha } from '../../../../shared/utils/formato';
-import { ProblemDetail, mensajeDeError } from '../../../../shared/utils/mensaje-error';
+import { mostrarErroresEnFormulario } from '../../../../shared/utils/formularios';
+import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
 import {
   ANIO_MINIMO,
@@ -251,26 +252,8 @@ export class FichaVehiculo {
   private mostrarError(err: unknown): void {
     this.guardando.set(false);
     this.cambiandoEstado.set(false);
-    const problema =
-      err instanceof HttpErrorResponse ? (err.error as Partial<ProblemDetail> | null) : null;
-    // Los errores de validación del backend se muestran debajo de cada campo.
-    // El VIN repetido llega como 409 sin campo, pero también va debajo del VIN.
-    const errores =
-      problema?.errores ??
-      (problema?.status === 409 && problema.detail?.includes('VIN')
-        ? { vin: 'Ya hay un vehículo cargado con este VIN.' }
-        : undefined);
-    let quedanSinCampo = !errores;
-    for (const [campo, mensaje] of Object.entries(errores ?? {})) {
-      const control = this.form.get(campo);
-      if (control) {
-        control.setErrors({ servidor: mensaje });
-        control.markAsTouched();
-      } else {
-        quedanSinCampo = true;
-      }
-    }
-    if (quedanSinCampo) this.error.set(mensajeDeError(err));
+    // El VIN repetido llega como 409 sin campo, pero va debajo del VIN.
+    this.error.set(mostrarErroresEnFormulario(this.form, err, [[/VIN/, 'vin']]));
   }
 
   private cargarEnFormulario(v: Vehiculo): void {

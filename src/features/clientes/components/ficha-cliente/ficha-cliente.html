@@ -1,0 +1,305 @@
+<div class="flex flex-col gap-6">
+  <a
+    routerLink="/panel/clientes"
+    class="inline-flex w-fit items-center gap-1 text-sm font-medium text-fg-secondary hover:text-fg"
+  >
+    <app-icono nombre="flecha-izquierda" class="size-4" />
+    Clientes
+  </a>
+
+  @if (errorCarga(); as mensaje) {
+    <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
+      <p class="font-medium">{{ mensaje }}</p>
+      <a routerLink="/panel/clientes" class="boton boton-secundario">Volver a clientes</a>
+    </div>
+  } @else if (!esNuevo() && !actual()) {
+    <p class="py-14 text-center text-fg-muted">Cargando cliente…</p>
+  } @else {
+    <header class="flex flex-wrap items-center gap-3">
+      @if (actual(); as c) {
+        <h1 class="text-h2">{{ c.nombre }} {{ c.apellido }}</h1>
+        @if (c.tieneCuenta) {
+          <app-etiqueta tono="info">Cuenta en el portal</app-etiqueta>
+        }
+      } @else {
+        <h1 class="text-h2">Nuevo cliente</h1>
+      }
+    </header>
+
+    @if (aviso(); as mensaje) {
+      <div
+        role="status"
+        class="flex items-center gap-2 rounded-md bg-success-bg px-4 py-3 text-sm text-success"
+      >
+        <app-icono nombre="check" class="size-4" />
+        {{ mensaje }}
+      </div>
+    }
+    @if (error(); as mensaje) {
+      <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+        {{ mensaje }}
+      </div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+      <form
+        [formGroup]="form"
+        (ngSubmit)="guardar()"
+        novalidate
+        class="tarjeta flex flex-col lg:col-span-2"
+      >
+        <!-- Datos personales -->
+        <section class="grid gap-5 p-6 sm:grid-cols-2">
+          <h2 class="text-h4 sm:col-span-2">Datos personales</h2>
+
+          <div class="flex flex-col gap-2">
+            <label for="nombre" class="etiqueta">Nombre</label>
+            <input
+              id="nombre"
+              type="text"
+              formControlName="nombre"
+              autocomplete="off"
+              class="campo"
+              [class.campo-invalido]="errorDe('nombre')"
+            />
+            @if (errorDe('nombre'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="apellido" class="etiqueta">Apellido</label>
+            <input
+              id="apellido"
+              type="text"
+              formControlName="apellido"
+              autocomplete="off"
+              class="campo"
+              [class.campo-invalido]="errorDe('apellido')"
+            />
+            @if (errorDe('apellido'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="documento" class="etiqueta">Documento</label>
+            <div class="flex gap-2">
+              <select
+                formControlName="tipoDocumento"
+                class="campo w-32 shrink-0"
+                aria-label="Tipo de documento"
+              >
+                @for (t of tiposDocumento; track t.valor) {
+                  <option [value]="t.valor">{{ t.texto }}</option>
+                }
+              </select>
+              <input
+                id="documento"
+                type="text"
+                formControlName="numeroDocumento"
+                autocomplete="off"
+                class="campo min-w-0"
+                [class.campo-invalido]="errorDe('numeroDocumento')"
+                placeholder="30.123.456"
+              />
+            </div>
+            @if (errorDe('numeroDocumento'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="nacimiento" class="etiqueta">
+              Fecha de nacimiento <span class="font-normal text-fg-muted">(opcional)</span>
+            </label>
+            <input
+              id="nacimiento"
+              type="date"
+              formControlName="fechaNacimiento"
+              class="campo"
+              [max]="hoy"
+              [class.campo-invalido]="errorDe('fechaNacimiento')"
+            />
+            @if (errorDe('fechaNacimiento'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+        </section>
+
+        <!-- Contacto -->
+        <section class="grid gap-5 border-t border-line p-6 sm:grid-cols-2">
+          <div class="flex flex-col gap-1 sm:col-span-2">
+            <h2 class="text-h4">Contacto</h2>
+            <p class="text-sm text-fg-muted">Hace falta al menos uno de los dos.</p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label for="email" class="etiqueta">Email</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              autocomplete="off"
+              class="campo"
+              [class.campo-invalido]="errorDe('email') || faltaContacto()"
+              placeholder="nombre@ejemplo.com"
+            />
+            @if (errorDe('email'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            } @else if (actual()?.tieneCuenta) {
+              <p class="text-xs text-fg-muted">Lo cambia el cliente desde su cuenta del portal.</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="telefono" class="etiqueta">Teléfono</label>
+            <input
+              id="telefono"
+              type="tel"
+              formControlName="telefono"
+              autocomplete="off"
+              class="campo"
+              [class.campo-invalido]="errorDe('telefono') || faltaContacto()"
+              placeholder="11 5555-1234"
+            />
+            @if (errorDe('telefono'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          @if (faltaContacto()) {
+            <p class="error-campo sm:col-span-2">Cargá al menos un email o un teléfono.</p>
+          }
+        </section>
+
+        <!-- Dirección -->
+        <section
+          formGroupName="direccion"
+          class="grid gap-5 border-t border-line p-6 sm:grid-cols-6"
+        >
+          <div class="flex flex-col gap-1 sm:col-span-6">
+            <h2 class="text-h4">Dirección</h2>
+            <p class="text-sm text-fg-muted">
+              Opcional al cargarlo, pero la necesita para comprar.
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:col-span-3">
+            <label for="calle" class="etiqueta">Calle</label>
+            <input
+              id="calle"
+              type="text"
+              formControlName="calle"
+              class="campo"
+              [class.campo-invalido]="errorDe('direccion.calle')"
+            />
+            @if (errorDe('direccion.calle'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2 sm:col-span-1">
+            <label for="numero" class="etiqueta">Número</label>
+            <input
+              id="numero"
+              type="text"
+              formControlName="numero"
+              class="campo"
+              [class.campo-invalido]="errorDe('direccion.numero')"
+            />
+            @if (errorDe('direccion.numero'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="piso" class="etiqueta">
+              Piso y depto. <span class="font-normal text-fg-muted">(opcional)</span>
+            </label>
+            <input id="piso" type="text" formControlName="pisoDepto" class="campo" />
+          </div>
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="ciudad" class="etiqueta">Ciudad</label>
+            <input
+              id="ciudad"
+              type="text"
+              formControlName="ciudad"
+              class="campo"
+              [class.campo-invalido]="errorDe('direccion.ciudad')"
+            />
+            @if (errorDe('direccion.ciudad'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="provincia" class="etiqueta">Provincia</label>
+            <input
+              id="provincia"
+              type="text"
+              formControlName="provincia"
+              list="provincias"
+              class="campo"
+              [class.campo-invalido]="errorDe('direccion.provincia')"
+            />
+            <datalist id="provincias">
+              @for (p of provincias; track p) {
+                <option [value]="p"></option>
+              }
+            </datalist>
+            @if (errorDe('direccion.provincia'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2 sm:col-span-2">
+            <label for="cp" class="etiqueta">
+              Código postal <span class="font-normal text-fg-muted">(opcional)</span>
+            </label>
+            <input id="cp" type="text" formControlName="codigoPostal" class="campo" />
+          </div>
+        </section>
+
+        <div class="flex justify-end gap-3 border-t border-line px-6 py-4">
+          <a routerLink="/panel/clientes" class="boton boton-secundario">Cancelar</a>
+          <button type="submit" class="boton boton-primario" [disabled]="guardando()">
+            @if (guardando()) {
+              Guardando…
+            } @else if (esNuevo()) {
+              Cargar cliente
+            } @else {
+              Guardar cambios
+            }
+          </button>
+        </div>
+      </form>
+
+      @if (actual(); as c) {
+        <aside class="flex flex-col gap-6">
+          <section class="tarjeta flex flex-col gap-3 p-6">
+            <h2 class="text-h4">Perfil</h2>
+            @if (c.perfilCompleto) {
+              <app-etiqueta class="w-fit" tono="exito">Completo</app-etiqueta>
+              <p class="text-sm text-fg-secondary">Tiene todo lo necesario para comprar.</p>
+            } @else {
+              <app-etiqueta class="w-fit" tono="aviso">Incompleto</app-etiqueta>
+              <p class="text-sm text-fg-secondary">
+                Para comprar le falta: {{ faltantes().join(', ') }}.
+              </p>
+            }
+          </section>
+          <section class="tarjeta flex flex-col gap-3 p-6 text-sm">
+            <h2 class="text-h4">Información</h2>
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+              <dt class="text-fg-muted">Origen</dt>
+              <dd class="text-right">
+                {{ c.origen === 'PORTAL' ? 'Se registró en el portal' : 'Cargado en el local' }}
+              </dd>
+              <dt class="text-fg-muted">Cuenta</dt>
+              <dd class="text-right">{{ c.tieneCuenta ? 'Sí' : 'No' }}</dd>
+              <dt class="text-fg-muted">Alta</dt>
+              <dd class="text-right">{{ formatearFecha(c.fechaCreacion) }}</dd>
+            </dl>
+          </section>
+        </aside>
+      }
+    </div>
+
+    @if (actual(); as c) {
+      <app-historial-cliente [clienteId]="c.id" />
+    }
+  }
+</div>

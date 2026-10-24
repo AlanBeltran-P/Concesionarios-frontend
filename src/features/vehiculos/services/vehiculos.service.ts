@@ -1,8 +1,9 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pagina } from '../../../shared/types/pagina';
+import { aParams } from '../../../shared/utils/http';
 import {
   Categoria,
   EstadoVehiculo,
@@ -22,13 +23,9 @@ export class VehiculosService {
 
   /** Los empleados ven todos los estados; los dados de baja no aparecen. */
   buscar(filtro: FiltroVehiculos): Observable<Pagina<VehiculoResumen>> {
-    let params = new HttpParams();
-    for (const [clave, valor] of Object.entries(filtro)) {
-      if (valor !== undefined && valor !== null && valor !== '') {
-        params = params.set(clave, String(valor));
-      }
-    }
-    return this.http.get<Pagina<VehiculoResumen>>(`${this.api}/vehiculos`, { params });
+    return this.http.get<Pagina<VehiculoResumen>>(`${this.api}/vehiculos`, {
+      params: aParams(filtro),
+    });
   }
 
   obtener(id: number): Observable<Vehiculo> {

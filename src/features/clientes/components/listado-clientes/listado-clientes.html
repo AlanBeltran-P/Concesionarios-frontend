@@ -1,0 +1,172 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-h2">Clientes</h1>
+      <p class="text-sm text-fg-muted">
+        Los que se registraron en el portal y los cargados en el local
+      </p>
+    </div>
+    <a routerLink="nuevo" class="boton boton-primario">
+      <app-icono nombre="mas" class="size-[18px]" />
+      Nuevo cliente
+    </a>
+  </header>
+
+  <section class="tarjeta flex flex-col gap-3 p-4 sm:flex-row sm:items-center" aria-label="Filtros">
+    <label class="relative flex-1">
+      <span class="sr-only">Buscar</span>
+      <app-icono
+        nombre="buscar"
+        class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-muted"
+      />
+      <input
+        type="search"
+        class="campo pl-10"
+        placeholder="Buscar por nombre, email o documento"
+        [value]="texto()"
+        (input)="buscarTexto($any($event.target).value)"
+      />
+    </label>
+    <label class="sm:w-56">
+      <span class="sr-only">Origen</span>
+      <select class="campo" (change)="filtrarOrigen($any($event.target).value)">
+        <option value="" [selected]="!origen()">Todos los clientes</option>
+        <option value="PORTAL" [selected]="origen() === 'PORTAL'">Con cuenta en el portal</option>
+        <option value="LOCAL" [selected]="origen() === 'LOCAL'">Cargados en el local</option>
+      </select>
+    </label>
+  </section>
+
+  @if (error(); as mensaje) {
+    <div
+      role="alert"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-md bg-danger-bg px-4 py-3 text-sm text-danger"
+    >
+      {{ mensaje }}
+      <button type="button" class="boton boton-secundario h-9" (click)="reintentar()">
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <section class="tarjeta overflow-hidden" aria-label="Clientes" [attr.aria-busy]="cargando()">
+      <table class="w-full text-left text-sm">
+        <thead
+          class="border-b border-line bg-subtle text-xs font-semibold tracking-[0.04em] text-fg-muted uppercase"
+        >
+          <tr>
+            <th scope="col" class="px-4 py-3 sm:px-5">Cliente</th>
+            <th scope="col" class="hidden px-5 py-3 md:table-cell">Documento</th>
+            <th scope="col" class="hidden px-5 py-3 lg:table-cell">Teléfono</th>
+            <th scope="col" class="px-4 py-3 sm:px-5">Origen</th>
+            <th scope="col" class="hidden w-10 px-3 py-3 sm:table-cell">
+              <span class="sr-only">Abrir</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line" [class.opacity-60]="cargando()">
+          @for (c of datos()?.content ?? []; track c.id) {
+            <tr class="group relative transition hover:bg-subtle">
+              <td class="px-4 py-3.5 sm:px-5">
+                <div class="flex min-w-0 flex-col">
+                  <a
+                    [routerLink]="[c.id]"
+                    class="truncate font-medium text-fg after:absolute after:inset-0 focus-visible:outline-none"
+                  >
+                    {{ nombreCompleto(c) }}
+                  </a>
+                  <span class="truncate text-xs text-fg-muted md:hidden">
+                    {{ formatearDocumento(c.tipoDocumento, c.numeroDocumento) }}
+                  </span>
+                  <span class="hidden truncate text-xs text-fg-muted md:inline">
+                    {{ c.email ?? 'Sin email' }}
+                  </span>
+                </div>
+              </td>
+              <td class="hidden px-5 py-3.5 whitespace-nowrap text-fg-secondary md:table-cell">
+                {{ formatearDocumento(c.tipoDocumento, c.numeroDocumento) }}
+              </td>
+              <td class="hidden px-5 py-3.5 text-fg-secondary lg:table-cell">
+                {{ c.telefono ?? '—' }}
+              </td>
+              <td class="px-4 py-3.5 sm:px-5">
+                <div class="flex flex-wrap gap-1.5">
+                  @if (c.tieneCuenta) {
+                    <app-etiqueta tono="info">Portal</app-etiqueta>
+                  } @else {
+                    <app-etiqueta>Local</app-etiqueta>
+                  }
+                  @if (!c.perfilCompleto) {
+                    <app-etiqueta tono="aviso">Perfil incompleto</app-etiqueta>
+                  }
+                </div>
+              </td>
+              <td class="hidden px-3 py-3.5 text-fg-muted group-hover:text-fg sm:table-cell">
+                <app-icono nombre="flecha-derecha" class="size-4" />
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="px-5 py-14 text-center">
+                @if (cargando()) {
+                  <span class="text-fg-muted">Cargando clientes…</span>
+                } @else {
+                  <div class="flex flex-col items-center gap-3">
+                    <span
+                      class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted"
+                    >
+                      <app-icono nombre="usuarios" class="size-6" />
+                    </span>
+                    @if (hayFiltros()) {
+                      <p class="font-medium">No hay clientes con esa búsqueda</p>
+                      <button
+                        type="button"
+                        class="boton boton-secundario"
+                        (click)="limpiarFiltros()"
+                      >
+                        Limpiar búsqueda
+                      </button>
+                    } @else {
+                      <p class="font-medium">Todavía no hay clientes</p>
+                      <a routerLink="nuevo" class="boton boton-primario">Cargar el primero</a>
+                    }
+                  </div>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (datos()?.page; as p) {
+        @if (p.totalPages > 1) {
+          <nav
+            class="flex items-center justify-between gap-3 border-t border-line px-5 py-3 text-sm"
+            aria-label="Paginado"
+          >
+            <span class="text-fg-muted">{{ rango() }}</span>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="boton boton-secundario h-9"
+                [disabled]="p.number === 0"
+                (click)="pagina.set(p.number - 1)"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                class="boton boton-secundario h-9"
+                [disabled]="p.number + 1 >= p.totalPages"
+                (click)="pagina.set(p.number + 1)"
+              >
+                Siguiente
+              </button>
+            </div>
+          </nav>
+        } @else if (p.totalElements > 0) {
+          <p class="border-t border-line px-5 py-3 text-sm text-fg-muted">{{ rango() }}</p>
+        }
+      }
+    </section>
+  }
+</div>
