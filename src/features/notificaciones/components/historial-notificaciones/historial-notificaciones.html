@@ -1,0 +1,142 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-col gap-1">
+    <h1 class="text-h2">Notificaciones</h1>
+    <p class="text-sm text-fg-muted">
+      Emails que el sistema mandó a clientes y empleados. Los que fallaron se pueden reenviar.
+    </p>
+  </header>
+
+  <section class="tarjeta flex flex-col gap-3 p-4 lg:flex-row lg:items-center" aria-label="Filtros">
+    <label class="relative flex-1">
+      <span class="sr-only">Destinatario</span>
+      <app-icono
+        nombre="buscar"
+        class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-muted"
+      />
+      <input
+        type="search"
+        class="campo pl-10"
+        placeholder="Email completo del destinatario (Enter para buscar)"
+        [value]="destinatario()"
+        (change)="buscar($any($event.target).value)"
+      />
+    </label>
+    <div class="grid grid-cols-2 gap-3">
+      <label>
+        <span class="sr-only">Tipo</span>
+        <select class="campo lg:w-56" (change)="filtrar('tipo', $any($event.target).value)">
+          <option value="" [selected]="!tipo()">Todos los tipos</option>
+          @for (t of tipos; track t[0]) {
+            <option [value]="t[0]" [selected]="tipo() === t[0]">{{ t[1] }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span class="sr-only">Estado</span>
+        <select class="campo lg:w-44" (change)="filtrar('estado', $any($event.target).value)">
+          <option value="" [selected]="!estado()">Todos los estados</option>
+          @for (e of estados; track e[0]) {
+            <option [value]="e[0]" [selected]="estado() === e[0]">{{ e[1].texto }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </section>
+
+  @if (aviso(); as mensaje) {
+    <p role="status" class="rounded-md bg-success-bg px-4 py-3 text-sm text-success">
+      {{ mensaje }}
+    </p>
+  }
+  @if (error(); as mensaje) {
+    <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">{{ mensaje }}</p>
+  }
+
+  @if (errorCarga(); as mensaje) {
+    <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">{{ mensaje }}</p>
+  } @else {
+    <section
+      class="tarjeta overflow-hidden"
+      aria-label="Notificaciones"
+      [attr.aria-busy]="cargando()"
+    >
+      <ul class="divide-y divide-line" [class.opacity-60]="cargando()">
+        @for (n of datos()?.content ?? []; track n.id) {
+          <li>
+            <button
+              type="button"
+              class="flex w-full flex-wrap items-center gap-3 px-5 py-3.5 text-left transition hover:bg-subtle"
+              [attr.aria-expanded]="abierta() === n.id"
+              (click)="alternar(n.id)"
+            >
+              <div class="flex w-full min-w-0 flex-col sm:w-auto sm:flex-1">
+                <span class="truncate font-medium">{{ n.asunto }}</span>
+                <span class="truncate text-xs text-fg-muted">
+                  {{ n.destinatario }} · {{ tipoNotificacion[n.tipo] }} ·
+                  {{ formatearFecha(n.fechaCreacion) }}
+                </span>
+              </div>
+              <app-etiqueta [tono]="estadoNotificacion[n.estado].tono">
+                {{ estadoNotificacion[n.estado].texto }}
+                @if (n.intentos > 1) {
+                  · {{ n.intentos }} intentos
+                }
+              </app-etiqueta>
+              <app-icono
+                nombre="flecha-derecha"
+                class="size-4 text-fg-muted transition"
+                [class.rotate-90]="abierta() === n.id"
+              />
+            </button>
+
+            @if (abierta() === n.id) {
+              <div class="flex flex-col gap-3 border-t border-line bg-subtle px-5 py-4">
+                @if (detalle(); as d) {
+                  @if (d.ultimoError) {
+                    <p class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+                      Último error: {{ d.ultimoError }}
+                    </p>
+                  }
+                  <div class="flex flex-wrap items-center justify-between gap-3 text-sm">
+                    <span class="text-fg-secondary">
+                      @if (d.fechaEnvio) {
+                        Enviado el {{ formatearFecha(d.fechaEnvio) }}
+                      } @else {
+                        Todavía no se envió
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      class="boton h-9"
+                      [class.boton-primario]="d.estado === 'FALLIDA'"
+                      [class.boton-secundario]="d.estado !== 'FALLIDA'"
+                      [disabled]="reenviando()"
+                      (click)="reenviar(d.id)"
+                    >
+                      {{ reenviando() ? 'Reenviando…' : 'Reenviar' }}
+                    </button>
+                  </div>
+                  @if (cuerpo(); as html) {
+                    <iframe
+                      title="Contenido del email"
+                      sandbox=""
+                      class="h-80 w-full rounded-md border border-line bg-white"
+                      [srcdoc]="html"
+                    ></iframe>
+                  }
+                } @else {
+                  <p class="text-sm text-fg-muted">Cargando…</p>
+                }
+              </div>
+            }
+          </li>
+        } @empty {
+          <li class="px-5 py-14 text-center text-fg-muted">
+            {{ cargando() ? 'Cargando…' : 'No hay notificaciones con esos filtros.' }}
+          </li>
+        }
+      </ul>
+      <app-paginado [info]="datos()?.page" (cambiar)="pagina.set($event)" />
+    </section>
+  }
+</div>

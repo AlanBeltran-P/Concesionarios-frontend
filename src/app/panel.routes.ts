@@ -186,6 +186,17 @@ SECCIONES['usuarios'] = [
   },
 ];
 
+SECCIONES['notificaciones'] = [
+  {
+    path: '',
+    title: 'Notificaciones · Concesionaria',
+    loadComponent: () =>
+      import('../features/notificaciones/components/historial-notificaciones/historial-notificaciones').then(
+        (m) => m.HistorialNotificaciones,
+      ),
+  },
+];
+
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },
