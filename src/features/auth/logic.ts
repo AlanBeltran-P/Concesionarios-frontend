@@ -18,7 +18,7 @@ export const rolGuard =
   () => {
     const auth = inject(AuthService);
     const router = inject(Router);
-    return auth.tieneRol(...roles) ? true : router.createUrlTree(['/']);
+    return auth.tieneRol(...roles) ? true : router.createUrlTree(['/sin-acceso']);
   };
 
 /** Para el login: si ya está logueado no tiene sentido mostrarlo. */
