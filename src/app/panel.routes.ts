@@ -124,6 +124,27 @@ SECCIONES['ventas'] = [
   },
 ];
 
+const estadoCuenta = () =>
+  import('../features/financiamiento/components/estado-cuenta/estado-cuenta').then(
+    (m) => m.EstadoCuentaComponent,
+  );
+SECCIONES['financiamiento'] = [
+  {
+    path: '',
+    title: 'Financiamiento · Concesionaria',
+    loadComponent: () =>
+      import('../features/financiamiento/components/seccion-financiamiento/seccion-financiamiento').then(
+        (m) => m.SeccionFinanciamiento,
+      ),
+  },
+  {
+    path: 'venta/:ventaId',
+    title: 'Estado de cuenta · Concesionaria',
+    loadComponent: estadoCuenta,
+  },
+  { path: ':id', title: 'Estado de cuenta · Concesionaria', loadComponent: estadoCuenta },
+];
+
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },

@@ -1,0 +1,269 @@
+<div class="flex flex-col gap-6">
+  <a
+    routerLink="/panel/financiamiento"
+    class="inline-flex w-fit items-center gap-1 text-sm font-medium text-fg-secondary hover:text-fg"
+  >
+    <app-icono nombre="flecha-izquierda" class="size-4" />
+    Financiamiento
+  </a>
+
+  @if (errorCarga(); as mensaje) {
+    <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
+      <p class="font-medium">{{ mensaje }}</p>
+      <a routerLink="/panel/financiamiento" class="boton boton-secundario">Volver</a>
+    </div>
+  } @else if (cuenta(); as c) {
+    <header>
+      <div class="flex flex-col gap-1">
+        <div class="flex flex-wrap items-center gap-3">
+          <h1 class="text-h2">{{ c.financiamiento.clienteNombre }}</h1>
+          <app-etiqueta [tono]="estadoFinanciamiento[c.financiamiento.estado].tono">
+            {{ estadoFinanciamiento[c.financiamiento.estado].texto }}
+          </app-etiqueta>
+        </div>
+        <p class="text-sm text-fg-muted">
+          <a [routerLink]="['/panel/ventas', c.financiamiento.ventaId]" class="underline">
+            {{ c.financiamiento.numeroComprobante }}
+          </a>
+          · {{ c.financiamiento.plan }} ({{ c.financiamiento.tasaAnualAplicada }} % anual) ·
+          {{ c.financiamiento.cantidadCuotas }} cuotas de
+          {{ formatearPrecio(c.financiamiento.valorCuota) }}
+        </p>
+      </div>
+    </header>
+
+    @if (aviso(); as mensaje) {
+      <div
+        role="status"
+        class="flex items-center gap-2 rounded-md bg-success-bg px-4 py-3 text-sm text-success"
+      >
+        <app-icono nombre="check" class="size-4" />
+        {{ mensaje }}
+      </div>
+    }
+
+    <!-- Resumen -->
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumen">
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Saldo pendiente</span>
+        <span class="text-price">{{ formatearPrecio(c.resumen.saldoPendiente) }}</span>
+        <span class="text-xs text-fg-muted">
+          {{ c.resumen.cuotasPagadas }} de {{ c.financiamiento.cantidadCuotas }} cuotas pagas
+        </span>
+      </div>
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Próxima cuota</span>
+        @if (c.resumen.proximaCuota; as p) {
+          <span class="text-price">{{ formatearPrecio(p.saldo) }}</span>
+          <span class="text-xs text-fg-muted">
+            N° {{ p.numero }} · vence el {{ formatearFecha(p.fechaVencimiento) }}
+          </span>
+        } @else {
+          <span class="text-price">—</span>
+          <span class="text-xs text-fg-muted">No quedan cuotas por pagar</span>
+        }
+      </div>
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Deuda vencida</span>
+        <span class="text-price" [class.text-danger]="c.resumen.deudaVencida > 0">
+          {{ formatearPrecio(c.resumen.deudaVencida) }}
+        </span>
+        <span class="text-xs text-fg-muted">
+          {{ c.resumen.cuotasVencidas }} cuotas vencidas · mora
+          {{ formatearPrecio(c.resumen.moraAcumulada) }}
+        </span>
+      </div>
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Anticipo</span>
+        <span class="text-price">{{ formatearPrecio(c.resumen.montoAnticipo) }}</span>
+        <span
+          class="text-xs"
+          [class.text-warning]="c.resumen.anticipoPendiente > 0"
+          [class.text-fg-muted]="!c.resumen.anticipoPendiente"
+        >
+          @if (c.resumen.anticipoPendiente > 0) {
+            Falta pagar {{ formatearPrecio(c.resumen.anticipoPendiente) }}
+          } @else {
+            Pagado
+          }
+        </span>
+      </div>
+    </section>
+
+    <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+      <!-- Cuotas -->
+      <section class="tarjeta overflow-hidden lg:col-span-2" aria-labelledby="titulo-cuotas">
+        <h2 id="titulo-cuotas" class="border-b border-line px-5 py-4 text-h4">Cuotas</h2>
+        <div class="max-h-[560px] overflow-auto">
+          <table class="w-full text-sm">
+            <thead
+              class="sticky top-0 border-b border-line bg-subtle text-xs font-semibold tracking-[0.04em] text-fg-muted uppercase"
+            >
+              <tr>
+                <th scope="col" class="px-4 py-3 text-left sm:px-5">N°</th>
+                <th scope="col" class="px-4 py-3 text-left sm:px-5">Vence</th>
+                <th scope="col" class="hidden px-5 py-3 text-right md:table-cell">Cuota</th>
+                <th scope="col" class="hidden px-5 py-3 text-right md:table-cell">Mora</th>
+                <th scope="col" class="px-4 py-3 text-right sm:px-5">Debe</th>
+                <th scope="col" class="hidden px-5 py-3 text-left sm:table-cell">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line">
+              @for (q of c.cuotas; track q.id) {
+                <tr>
+                  <td class="px-4 py-2.5 sm:px-5">{{ q.numero }}</td>
+                  <td class="px-4 py-2.5 whitespace-nowrap text-fg-secondary sm:px-5">
+                    {{ formatearFecha(q.fechaVencimiento) }}
+                    @if (q.diasAtraso > 0 && q.estado !== 'PAGADA') {
+                      <span class="block text-xs text-danger"
+                        >{{ q.diasAtraso }} días de atraso</span
+                      >
+                    }
+                  </td>
+                  <td class="hidden px-5 py-2.5 text-right md:table-cell">
+                    {{ formatearPrecio(q.monto) }}
+                  </td>
+                  <td class="hidden px-5 py-2.5 text-right text-fg-secondary md:table-cell">
+                    {{ q.mora ? formatearPrecio(q.mora) : '—' }}
+                  </td>
+                  <td class="px-4 py-2.5 text-right font-medium whitespace-nowrap sm:px-5">
+                    {{ q.saldo ? formatearPrecio(q.saldo) : '—' }}
+                    <app-etiqueta
+                      class="mt-1 block font-normal sm:hidden"
+                      [tono]="estadoCuota[q.estado].tono"
+                    >
+                      {{ estadoCuota[q.estado].texto }}
+                    </app-etiqueta>
+                  </td>
+                  <td class="hidden px-5 py-2.5 sm:table-cell">
+                    <app-etiqueta [tono]="estadoCuota[q.estado].tono">
+                      {{ estadoCuota[q.estado].texto }}
+                    </app-etiqueta>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="flex flex-col gap-6">
+        <!-- Registrar pago -->
+        @if (admitePagos() && (c.resumen.anticipoPendiente > 0 || c.resumen.proximaCuota)) {
+          <form
+            class="tarjeta flex flex-col gap-4 p-6"
+            novalidate
+            (submit)="$event.preventDefault(); registrar()"
+          >
+            <h2 class="text-h4">Registrar pago</h2>
+            @if (error(); as mensaje) {
+              <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+                {{ mensaje }}
+              </p>
+            }
+            <div class="grid grid-cols-2 gap-1 rounded-md bg-subtle p-1">
+              @for (t of tiposPago; track t) {
+                <button
+                  type="button"
+                  class="h-9 rounded-[7px] text-sm font-medium transition disabled:opacity-50"
+                  [class.bg-surface]="tipo() === t"
+                  [class.shadow-sm]="tipo() === t"
+                  [class.text-fg]="tipo() === t"
+                  [class.text-fg-secondary]="tipo() !== t"
+                  [attr.aria-pressed]="tipo() === t"
+                  [disabled]="
+                    t === 'ANTICIPO' ? !c.resumen.anticipoPendiente : !c.resumen.proximaCuota
+                  "
+                  (click)="elegirTipo(t)"
+                >
+                  {{ tipoPago[t] }}
+                </button>
+              }
+            </div>
+            <p class="text-xs text-fg-muted">
+              @if (tipo() === 'ANTICIPO') {
+                Falta pagar {{ formatearPrecio(c.resumen.anticipoPendiente) }} del anticipo.
+              } @else if (c.resumen.proximaCuota; as p) {
+                Se aplica a la cuota {{ p.numero }} (debe {{ formatearPrecio(p.saldo) }}). Las
+                cuotas se pagan en orden.
+              }
+            </p>
+            <div class="flex flex-col gap-2">
+              <label for="monto" class="etiqueta">Monto ($)</label>
+              <input
+                id="monto"
+                type="number"
+                min="0"
+                step="0.01"
+                class="campo"
+                [class.campo-invalido]="intento() && errorMonto()"
+                [value]="monto() || ''"
+                (input)="monto.set(numero($any($event.target).value))"
+              />
+              @if (intento() && errorMonto(); as e) {
+                <p class="error-campo">{{ e }}</p>
+              } @else {
+                <p class="text-xs text-fg-muted">Se puede pagar una parte.</p>
+              }
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="medio" class="etiqueta">Medio de pago</label>
+              <select id="medio" class="campo" (change)="medio.set($any($event.target).value)">
+                @for (m of mediosPago; track m[0]) {
+                  <option [value]="m[0]" [selected]="medio() === m[0]">{{ m[1] }}</option>
+                }
+              </select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="referencia" class="etiqueta">
+                Referencia <span class="font-normal text-fg-muted">(opcional)</span>
+              </label>
+              <input
+                id="referencia"
+                type="text"
+                maxlength="100"
+                class="campo"
+                placeholder="N° de transferencia o recibo"
+                [value]="referencia()"
+                (input)="referencia.set($any($event.target).value)"
+              />
+            </div>
+            <button type="submit" class="boton boton-primario" [disabled]="guardando()">
+              {{ guardando() ? 'Registrando…' : 'Registrar pago' }}
+            </button>
+          </form>
+        }
+
+        <!-- Pagos -->
+        <section class="tarjeta flex flex-col" aria-labelledby="titulo-pagos">
+          <h2 id="titulo-pagos" class="border-b border-line px-5 py-4 text-h4">Pagos</h2>
+          <ul class="divide-y divide-line text-sm">
+            @for (p of c.pagos; track p.id) {
+              <li class="flex items-center justify-between gap-3 px-5 py-3">
+                <div class="flex flex-col">
+                  <span class="font-medium">
+                    {{ tipoPago[p.tipo] }}
+                    @if (p.numeroCuota) {
+                      {{ p.numeroCuota }}
+                    }
+                  </span>
+                  <span class="text-xs text-fg-muted">
+                    {{ formatearFecha(p.fechaPago) }} · {{ medioPago[p.medioPago] }}
+                    @if (p.referencia) {
+                      · {{ p.referencia }}
+                    }
+                  </span>
+                </div>
+                <span class="font-display font-semibold">{{ formatearPrecio(p.monto) }}</span>
+              </li>
+            } @empty {
+              <li class="px-5 py-8 text-center text-fg-muted">Todavía no hay pagos.</li>
+            }
+          </ul>
+        </section>
+      </div>
+    </div>
+  } @else {
+    <p class="py-14 text-center text-fg-muted">Cargando estado de cuenta…</p>
+  }
+</div>

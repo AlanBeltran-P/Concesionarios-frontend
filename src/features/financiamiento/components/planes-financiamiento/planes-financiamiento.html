@@ -1,0 +1,189 @@
+<div class="flex flex-col gap-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <p class="text-sm text-fg-muted">
+      @if (esAdmin()) {
+        Desactivar un plan no cambia los financiamientos que ya lo usan.
+      } @else {
+        Los planes los configura un administrador.
+      }
+    </p>
+    @if (esAdmin() && editando() === null) {
+      <button type="button" class="boton boton-primario" (click)="nuevo()">Nuevo plan</button>
+    }
+  </div>
+
+  @if (aviso(); as mensaje) {
+    <p role="status" class="rounded-md bg-success-bg px-4 py-3 text-sm text-success">
+      {{ mensaje }}
+    </p>
+  }
+  @if (error(); as mensaje) {
+    <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">{{ mensaje }}</p>
+  }
+
+  @if (editando() !== null) {
+    <form
+      class="tarjeta flex flex-col gap-5 p-6"
+      novalidate
+      (submit)="$event.preventDefault(); guardar()"
+    >
+      <h2 class="text-h4">{{ editando() === 'nuevo' ? 'Nuevo plan' : 'Editar plan' }}</h2>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="flex flex-col gap-2">
+          <label for="plan-nombre" class="etiqueta">Nombre</label>
+          <input
+            id="plan-nombre"
+            type="text"
+            maxlength="80"
+            class="campo"
+            [class.campo-invalido]="intento() && errores().nombre"
+            [value]="borrador().nombre"
+            (input)="campo('nombre', $any($event.target).value)"
+          />
+          @if (intento() && errores().nombre; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="plan-tasa" class="etiqueta">Tasa anual (%)</label>
+          <input
+            id="plan-tasa"
+            type="number"
+            step="0.01"
+            class="campo"
+            [class.campo-invalido]="intento() && errores().tasaAnual"
+            [value]="borrador().tasaAnual"
+            (input)="campo('tasaAnual', $any($event.target).value)"
+          />
+          @if (intento() && errores().tasaAnual; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </div>
+        <div class="flex flex-col gap-2 sm:col-span-2">
+          <label for="plan-descripcion" class="etiqueta">
+            Descripción <span class="font-normal text-fg-muted">(opcional)</span>
+          </label>
+          <input
+            id="plan-descripcion"
+            type="text"
+            maxlength="500"
+            class="campo"
+            [value]="borrador().descripcion"
+            (input)="campo('descripcion', $any($event.target).value)"
+          />
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="plan-plazos" class="etiqueta">Cuotas permitidas</label>
+          <input
+            id="plan-plazos"
+            type="text"
+            class="campo"
+            placeholder="12, 24, 36"
+            [class.campo-invalido]="intento() && errores().plazos"
+            [value]="borrador().plazos"
+            (input)="campo('plazos', $any($event.target).value)"
+          />
+          @if (intento() && errores().plazos; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </div>
+        <div class="grid grid-cols-2 gap-5">
+          <div class="flex flex-col gap-2">
+            <label for="plan-anticipo" class="etiqueta">Anticipo mínimo (%)</label>
+            <input
+              id="plan-anticipo"
+              type="number"
+              step="0.01"
+              class="campo"
+              [class.campo-invalido]="intento() && errores().anticipo"
+              [value]="borrador().anticipo"
+              (input)="campo('anticipo', $any($event.target).value)"
+            />
+            @if (intento() && errores().anticipo; as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="plan-mora" class="etiqueta">Mora diaria (%)</label>
+            <input
+              id="plan-mora"
+              type="number"
+              step="0.01"
+              class="campo"
+              [class.campo-invalido]="intento() && errores().mora"
+              [value]="borrador().mora"
+              (input)="campo('mora', $any($event.target).value)"
+            />
+            @if (intento() && errores().mora; as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-line pt-4">
+        <button type="button" class="boton boton-secundario" (click)="cerrar()">Cancelar</button>
+        <button type="submit" class="boton boton-primario" [disabled]="ocupado()">
+          Guardar plan
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (cargando()) {
+    <p class="py-10 text-center text-sm text-fg-muted">Cargando planes…</p>
+  } @else {
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (p of planes(); track p.id) {
+        <article class="tarjeta flex flex-col gap-4 p-5" [class.opacity-70]="!p.activo">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex min-w-0 flex-col gap-1">
+              <h3 class="text-h4">{{ p.nombre }}</h3>
+              @if (p.descripcion) {
+                <p class="text-sm text-fg-muted">{{ p.descripcion }}</p>
+              }
+            </div>
+            @if (!p.activo) {
+              <app-etiqueta>Desactivado</app-etiqueta>
+            }
+          </div>
+          <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <dt class="text-fg-muted">Tasa anual</dt>
+            <dd class="text-right font-medium">{{ p.tasaAnual }} %</dd>
+            <dt class="text-fg-muted">Cuotas</dt>
+            <dd class="text-right">{{ p.plazos.join(', ') }}</dd>
+            <dt class="text-fg-muted">Anticipo mínimo</dt>
+            <dd class="text-right">{{ p.porcentajeAnticipoMinimo }} %</dd>
+            <dt class="text-fg-muted">Mora diaria</dt>
+            <dd class="text-right">{{ p.porcentajeMoraDiaria }} %</dd>
+          </dl>
+          @if (esAdmin()) {
+            <div class="mt-auto flex gap-2 border-t border-line pt-4">
+              <button
+                type="button"
+                class="boton boton-secundario h-9 flex-1"
+                [disabled]="ocupado()"
+                (click)="editar(p)"
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                class="boton h-9 flex-1"
+                [class.boton-peligro]="p.activo"
+                [class.boton-secundario]="!p.activo"
+                [disabled]="ocupado()"
+                (click)="cambiarActivo(p)"
+              >
+                {{ p.activo ? 'Desactivar' : 'Activar' }}
+              </button>
+            </div>
+          }
+        </article>
+      } @empty {
+        <p class="col-span-full py-10 text-center text-sm text-fg-muted">
+          Todavía no hay planes de financiación.
+        </p>
+      }
+    </div>
+  }
+</div>

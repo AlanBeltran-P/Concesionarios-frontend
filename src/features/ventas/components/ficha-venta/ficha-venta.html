@@ -146,6 +146,12 @@
               {{ v.cantidadCuotas }} × {{ formatearPrecio(v.valorCuota ?? 0) }}
             </dd>
           </dl>
+          <a
+            [routerLink]="['/panel/financiamiento/venta', v.id]"
+            class="boton boton-primario w-full"
+          >
+            Estado de cuenta y pagos
+          </a>
         }
 
         <button

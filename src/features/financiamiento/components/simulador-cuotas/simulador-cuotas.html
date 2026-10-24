@@ -1,0 +1,129 @@
+<div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+  <form
+    class="tarjeta flex flex-col gap-5 p-6"
+    novalidate
+    (submit)="$event.preventDefault(); simular()"
+  >
+    <h2 class="text-h4">Datos</h2>
+    <div class="flex flex-col gap-2">
+      <label for="sim-plan" class="etiqueta">Plan</label>
+      <select id="sim-plan" class="campo" (change)="elegirPlan($any($event.target).value)">
+        <option value="" [selected]="!planId()" disabled>Elegí un plan</option>
+        @for (p of planes(); track p.id) {
+          <option [value]="p.id" [selected]="planId() === p.id">
+            {{ p.nombre }} ({{ p.tasaAnual }} % anual)
+          </option>
+        }
+      </select>
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="sim-precio" class="etiqueta">Precio del vehículo ($)</label>
+      <input
+        id="sim-precio"
+        type="number"
+        min="1"
+        class="campo"
+        [value]="precio() || ''"
+        (input)="precio.set(numero($any($event.target).value))"
+      />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="sim-anticipo" class="etiqueta">Anticipo ($)</label>
+      <input
+        id="sim-anticipo"
+        type="number"
+        min="0"
+        class="campo"
+        [value]="anticipo() || ''"
+        (input)="anticipo.set(numero($any($event.target).value))"
+      />
+      @if (plan(); as p) {
+        <p class="text-xs text-fg-muted">
+          Mínimo {{ p.porcentajeAnticipoMinimo }} %{{
+            precio() ? ' (' + formatearPrecio(anticipoMinimo()) + ')' : ''
+          }}. Incluye efectivo, seña y auto usado.
+        </p>
+      }
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="sim-cuotas" class="etiqueta">Cuotas</label>
+      <select
+        id="sim-cuotas"
+        class="campo"
+        [disabled]="!plan()"
+        (change)="cuotas.set(numero($any($event.target).value) || null)"
+      >
+        <option value="" [selected]="!cuotas()" disabled>Elegí</option>
+        @for (n of plan()?.plazos ?? []; track n) {
+          <option [value]="n" [selected]="cuotas() === n">{{ n }} cuotas</option>
+        }
+      </select>
+    </div>
+    @if (error(); as mensaje) {
+      <p role="alert" class="error-campo">{{ mensaje }}</p>
+    }
+    <button type="submit" class="boton boton-primario" [disabled]="calculando()">
+      {{ calculando() ? 'Calculando…' : 'Simular' }}
+    </button>
+  </form>
+
+  <section class="tarjeta flex flex-col lg:col-span-2" aria-label="Resultado">
+    @if (simulacion(); as s) {
+      <div class="grid gap-4 border-b border-line p-6 sm:grid-cols-3">
+        <div class="flex flex-col gap-1">
+          <span class="text-sm text-fg-muted">Cuota fija</span>
+          <span class="text-price">{{ formatearPrecio(s.valorCuota) }}</span>
+          <span class="text-xs text-fg-muted">{{ s.cantidadCuotas }} cuotas</span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-sm text-fg-muted">Se financia</span>
+          <span class="font-display text-h4">{{ formatearPrecio(s.montoFinanciado) }}</span>
+          <span class="text-xs text-fg-muted"
+            >Intereses {{ formatearPrecio(s.totalIntereses) }}</span
+          >
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-sm text-fg-muted">Total a pagar</span>
+          <span class="font-display text-h4">{{ formatearPrecio(s.totalAPagar) }}</span>
+          <span class="text-xs text-fg-muted">Anticipo incluido</span>
+        </div>
+      </div>
+      <div class="max-h-[480px] overflow-auto">
+        <table class="w-full text-right text-sm">
+          <thead
+            class="sticky top-0 border-b border-line bg-subtle text-xs font-semibold tracking-[0.04em] text-fg-muted uppercase"
+          >
+            <tr>
+              <th scope="col" class="px-5 py-3 text-left">N°</th>
+              <th scope="col" class="hidden px-5 py-3 sm:table-cell">Capital</th>
+              <th scope="col" class="hidden px-5 py-3 sm:table-cell">Interés</th>
+              <th scope="col" class="px-5 py-3">Cuota</th>
+              <th scope="col" class="px-5 py-3">Queda</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            @for (c of s.cuotas; track c.numero) {
+              <tr>
+                <td class="px-5 py-2.5 text-left">{{ c.numero }}</td>
+                <td class="hidden px-5 py-2.5 text-fg-secondary sm:table-cell">
+                  {{ formatearPrecio(c.capital) }}
+                </td>
+                <td class="hidden px-5 py-2.5 text-fg-secondary sm:table-cell">
+                  {{ formatearPrecio(c.interes) }}
+                </td>
+                <td class="px-5 py-2.5 font-medium">{{ formatearPrecio(c.monto) }}</td>
+                <td class="px-5 py-2.5 text-fg-secondary">
+                  {{ formatearPrecio(c.saldoRestante) }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="px-6 py-16 text-center text-sm text-fg-muted">
+        Completá los datos y tocá "Simular" para ver las cuotas.
+      </p>
+    }
+  </section>
+</div>
