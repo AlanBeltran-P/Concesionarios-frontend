@@ -24,6 +24,10 @@ export class Login {
 
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
+  /** Mensaje que deja otra pantalla al mandar al login (ej. después de cambiar la contraseña). */
+  protected readonly aviso = signal<string | null>(
+    (this.router.currentNavigation()?.extras.state?.['aviso'] as string | undefined) ?? null,
+  );
   protected readonly verPassword = signal(false);
   protected readonly anio = new Date().getFullYear();
 

@@ -70,12 +70,17 @@
         >
           {{ iniciales() }}
         </span>
-        <div class="flex min-w-0 flex-1 flex-col">
+        <a
+          routerLink="/panel/mi-cuenta"
+          title="Mi cuenta"
+          class="flex min-w-0 flex-1 flex-col rounded-sm hover:underline"
+          (click)="menuAbierto.set(false)"
+        >
           <span class="truncate text-sm font-medium text-fg-inverse">
             {{ u.nombre }} {{ u.apellido }}
           </span>
           <span class="text-xs text-fg-inverse-muted">{{ nombreRol() }}</span>
-        </div>
+        </a>
         <button
           type="button"
           class="rounded-sm p-1.5 text-fg-inverse-muted transition hover:bg-inverse-soft hover:text-fg-inverse"

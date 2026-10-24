@@ -3,7 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, finalize, map, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, Rol, Sesion, TokenResponse } from '../model';
+import { LoginRequest, Rol, Sesion, TokenResponse, Usuario } from '../model';
 
 const CLAVE_SESION = 'concesionaria.sesion';
 
@@ -60,15 +60,25 @@ export class AuthService {
     this.cerrarSesionLocal();
   }
 
-  /** Borra la sesión del navegador y vuelve al login. */
-  cerrarSesionLocal(): void {
+  /** Borra la sesión del navegador y vuelve al login, con un aviso opcional para mostrar ahí. */
+  cerrarSesionLocal(aviso?: string): void {
     this.sesion.set(null);
     try {
       localStorage.removeItem(CLAVE_SESION);
     } catch {
       // Sin acceso al storage no hay nada que borrar.
     }
-    void this.router.navigate(['/auth/login']);
+    void this.router.navigate(['/auth/login'], { state: aviso ? { aviso } : undefined });
+  }
+
+  /** Datos del usuario logueado (RF-05). */
+  yo(): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.url}/me`);
+  }
+
+  /** RF-05. El backend cierra todas sus sesiones, así que después hay que volver a ingresar. */
+  cambiarPassword(passwordActual: string, nuevaPassword: string): Observable<void> {
+    return this.http.put<void>(`${this.url}/me/password`, { passwordActual, nuevaPassword });
   }
 
   tieneRol(...roles: Rol[]): boolean {

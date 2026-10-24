@@ -1,0 +1,116 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-col gap-1">
+    <h1 class="text-h2">Mi cuenta</h1>
+    <p class="text-sm text-fg-muted">Tus datos y tu contraseña</p>
+  </header>
+
+  <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+    <section class="tarjeta flex flex-col gap-4 p-6" aria-labelledby="t-datos">
+      <h2 id="t-datos" class="text-h4">Datos</h2>
+      @if (yo(); as u) {
+        <dl class="grid gap-3 text-sm">
+          <div class="flex flex-col gap-0.5">
+            <dt class="text-fg-muted">Nombre</dt>
+            <dd class="font-medium">{{ u.nombre }} {{ u.apellido }}</dd>
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <dt class="text-fg-muted">Email</dt>
+            <dd>{{ u.email }}</dd>
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <dt class="text-fg-muted">Rol</dt>
+            <dd>{{ nombreRol[u.rol] }}</dd>
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <dt class="text-fg-muted">Cuenta creada</dt>
+            <dd>{{ formatearFecha(u.fechaCreacion) }}</dd>
+          </div>
+        </dl>
+        <p class="text-xs text-fg-muted">Para cambiar estos datos, hablá con un administrador.</p>
+      } @else {
+        <p class="text-sm text-fg-muted">Cargando…</p>
+      }
+    </section>
+
+    <form
+      class="tarjeta flex flex-col gap-5 p-6 lg:col-span-2"
+      novalidate
+      (submit)="$event.preventDefault(); cambiar()"
+    >
+      <div class="flex flex-col gap-1">
+        <h2 class="text-h4">Cambiar contraseña</h2>
+        <p class="text-sm text-fg-muted">
+          Se cierran tus sesiones abiertas y vas a tener que ingresar de nuevo.
+        </p>
+      </div>
+      @if (error(); as mensaje) {
+        <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+          {{ mensaje }}
+        </p>
+      }
+      <div class="flex flex-col gap-2 sm:w-1/2">
+        <label for="pw-actual" class="etiqueta">Contraseña actual</label>
+        <input
+          id="pw-actual"
+          [type]="ver() ? 'text' : 'password'"
+          autocomplete="current-password"
+          class="campo"
+          [class.campo-invalido]="intento() && errores()['actual']"
+          [value]="actual()"
+          (input)="actual.set($any($event.target).value)"
+        />
+        @if (intento() && errores()['actual']; as e) {
+          <p class="error-campo">{{ e }}</p>
+        }
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="flex flex-col gap-2">
+          <label for="pw-nueva" class="etiqueta">Contraseña nueva</label>
+          <input
+            id="pw-nueva"
+            [type]="ver() ? 'text' : 'password'"
+            autocomplete="new-password"
+            class="campo"
+            [class.campo-invalido]="intento() && errores()['nueva']"
+            [value]="nueva()"
+            (input)="nueva.set($any($event.target).value)"
+          />
+          @if (intento() && errores()['nueva']; as e) {
+            <p class="error-campo">{{ e }}</p>
+          } @else {
+            <p class="text-xs text-fg-muted">8 caracteres o más, con letras y números.</p>
+          }
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="pw-repetida" class="etiqueta">Repetí la nueva</label>
+          <input
+            id="pw-repetida"
+            [type]="ver() ? 'text' : 'password'"
+            autocomplete="new-password"
+            class="campo"
+            [class.campo-invalido]="intento() && errores()['repetida']"
+            [value]="repetida()"
+            (input)="repetida.set($any($event.target).value)"
+          />
+          @if (intento() && errores()['repetida']; as e) {
+            <p class="error-campo">{{ e }}</p>
+          }
+        </div>
+      </div>
+      <label class="flex w-fit items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          class="size-4 accent-fg"
+          [checked]="ver()"
+          (change)="ver.set($any($event.target).checked)"
+        />
+        Mostrar contraseñas
+      </label>
+      <div class="flex justify-end border-t border-line pt-4">
+        <button type="submit" class="boton boton-primario" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : 'Cambiar contraseña' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

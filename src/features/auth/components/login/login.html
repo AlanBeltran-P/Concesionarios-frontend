@@ -112,6 +112,11 @@
         <p class="text-fg-secondary">Ingresá con tu cuenta para continuar.</p>
       </header>
 
+      @if (aviso(); as mensaje) {
+        <div role="status" class="rounded-md bg-success-bg px-4 py-3 text-sm text-success">
+          {{ mensaje }}
+        </div>
+      }
       @if (error(); as mensaje) {
         <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
           {{ mensaje }}

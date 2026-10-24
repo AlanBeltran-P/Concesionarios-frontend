@@ -200,6 +200,12 @@ SECCIONES['notificaciones'] = [
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },
+  {
+    path: 'mi-cuenta',
+    title: 'Mi cuenta · Concesionaria',
+    loadComponent: () =>
+      import('../features/auth/components/mi-cuenta/mi-cuenta').then((m) => m.MiCuenta),
+  },
   ...MENU_PANEL.flatMap((seccion) => seccion.items).map((item) => ({
     path: item.ruta,
     canActivate: [rolGuard(...item.roles)],
