@@ -1,0 +1,163 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-col gap-1">
+    <h1 class="text-h2">Comisiones</h1>
+    <p class="text-sm text-fg-muted">
+      @if (esAdmin()) {
+        Comisiones de todos los vendedores. Se calculan solas al registrar cada venta.
+      } @else {
+        Tus comisiones por cada venta registrada.
+      }
+    </p>
+  </header>
+
+  <section class="tarjeta flex flex-wrap items-end gap-3 p-4" aria-label="Filtros">
+    @if (esAdmin()) {
+      <label class="flex w-full flex-col gap-1.5 sm:w-52">
+        <span class="text-xs font-medium text-fg-muted">Vendedor</span>
+        <select class="campo h-10" (change)="filtrar('vendedor', $any($event.target).value)">
+          <option value="" [selected]="!vendedorId()">Todos</option>
+          @for (v of listaVendedores(); track v.id) {
+            <option [value]="v.id" [selected]="vendedorId() === v.id">
+              {{ v.nombre }} {{ v.apellido }}
+            </option>
+          }
+        </select>
+      </label>
+    }
+    <label class="flex flex-col gap-1.5">
+      <span class="text-xs font-medium text-fg-muted">Desde</span>
+      <input
+        type="date"
+        class="campo h-10 w-40"
+        [value]="desde()"
+        (change)="filtrar('desde', $any($event.target).value)"
+      />
+    </label>
+    <label class="flex flex-col gap-1.5">
+      <span class="text-xs font-medium text-fg-muted">Hasta</span>
+      <input
+        type="date"
+        class="campo h-10 w-40"
+        [value]="hasta()"
+        (change)="filtrar('hasta', $any($event.target).value)"
+      />
+    </label>
+    <label class="flex w-full flex-col gap-1.5 sm:w-44">
+      <span class="text-xs font-medium text-fg-muted">Estado</span>
+      <select class="campo h-10" (change)="filtrar('estado', $any($event.target).value)">
+        <option value="" [selected]="!estado()">Todos</option>
+        @for (e of estados; track e[0]) {
+          <option [value]="e[0]" [selected]="estado() === e[0]">{{ e[1].texto }}</option>
+        }
+      </select>
+    </label>
+  </section>
+
+  @if (resumen(); as r) {
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Totales del período">
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Ventas</span>
+        <span class="text-price">{{ r.cantidadVentas }}</span>
+      </div>
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">A pagar</span>
+        <span class="text-price text-warning">{{ formatearPrecio(r.totalPendiente) }}</span>
+      </div>
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Pagadas</span>
+        <span class="text-price">{{ formatearPrecio(r.totalPagado) }}</span>
+      </div>
+      <div class="tarjeta flex flex-col gap-1 p-5">
+        <span class="text-sm text-fg-muted">Total</span>
+        <span class="text-price">{{ formatearPrecio(r.total) }}</span>
+      </div>
+    </section>
+  }
+
+  @if (error(); as mensaje) {
+    <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">{{ mensaje }}</p>
+  }
+
+  <section class="tarjeta overflow-hidden" aria-label="Comisiones" [attr.aria-busy]="cargando()">
+    <table class="w-full text-left text-sm">
+      <thead
+        class="border-b border-line bg-subtle text-xs font-semibold tracking-[0.04em] text-fg-muted uppercase"
+      >
+        <tr>
+          <th scope="col" class="px-4 py-3 sm:px-5">Venta</th>
+          @if (esAdmin()) {
+            <th scope="col" class="hidden px-5 py-3 md:table-cell">Vendedor</th>
+          }
+          <th scope="col" class="hidden px-5 py-3 text-right lg:table-cell">Base</th>
+          <th scope="col" class="px-4 py-3 text-right sm:px-5">Comisión</th>
+          <th scope="col" class="hidden px-5 py-3 sm:table-cell">Estado</th>
+          @if (esAdmin()) {
+            <th scope="col" class="w-px px-5 py-3"><span class="sr-only">Acciones</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line" [class.opacity-60]="cargando()">
+        @for (c of datos()?.content ?? []; track c.id) {
+          <tr>
+            <td class="px-4 py-3.5 sm:px-5">
+              <div class="flex flex-col">
+                <a [routerLink]="['/panel/ventas', c.ventaId]" class="font-medium underline">
+                  {{ c.numeroComprobante }}
+                </a>
+                <span class="text-xs text-fg-muted">
+                  {{ formatearFecha(c.fechaCalculo) }}
+                  @if (c.fechaPago) {
+                    · pagada el {{ formatearFecha(c.fechaPago) }}
+                  }
+                </span>
+              </div>
+            </td>
+            @if (esAdmin()) {
+              <td class="hidden px-5 py-3.5 text-fg-secondary md:table-cell">
+                {{ c.vendedorNombre }}
+              </td>
+            }
+            <td class="hidden px-5 py-3.5 text-right text-fg-secondary lg:table-cell">
+              {{ formatearPrecio(c.baseCalculo) }} × {{ c.porcentaje }} %
+            </td>
+            <td class="px-4 py-3.5 text-right whitespace-nowrap sm:px-5">
+              <span class="font-display font-semibold">{{ formatearPrecio(c.monto) }}</span>
+              <app-etiqueta
+                class="mt-1 block font-sans sm:hidden"
+                [tono]="estadoComision[c.estado].tono"
+              >
+                {{ estadoComision[c.estado].texto }}
+              </app-etiqueta>
+            </td>
+            <td class="hidden px-5 py-3.5 sm:table-cell">
+              <app-etiqueta [tono]="estadoComision[c.estado].tono">
+                {{ estadoComision[c.estado].texto }}
+              </app-etiqueta>
+            </td>
+            @if (esAdmin()) {
+              <td class="px-5 py-3.5">
+                @if (c.estado === 'PENDIENTE') {
+                  <button
+                    type="button"
+                    class="boton boton-secundario h-8 px-3"
+                    [disabled]="pagando() !== null"
+                    (click)="pagar(c.id)"
+                  >
+                    {{ pagando() === c.id ? 'Guardando…' : 'Marcar pagada' }}
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="px-5 py-14 text-center text-fg-muted">
+              {{ cargando() ? 'Cargando…' : 'No hay comisiones en ese período.' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginado [info]="datos()?.page" (cambiar)="pagina.set($event)" />
+  </section>
+</div>

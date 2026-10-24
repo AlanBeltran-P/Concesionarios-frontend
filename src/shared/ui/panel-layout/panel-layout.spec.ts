@@ -57,6 +57,7 @@ describe('PanelLayout', () => {
       'Cotizaciones',
       'Ventas',
       'Financiamiento',
+      'Comisiones',
     ]);
   });
 });

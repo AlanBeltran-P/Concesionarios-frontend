@@ -177,3 +177,34 @@ export interface NuevaVenta {
   cantidadCuotas: number | null;
   montoFinanciado: number | null;
 }
+
+export interface Comision {
+  id: number;
+  ventaId: number;
+  numeroComprobante: string;
+  vendedorId: number;
+  vendedorNombre: string;
+  baseCalculo: number;
+  porcentaje: number;
+  monto: number;
+  estado: EstadoComision;
+  fechaCalculo: string;
+  fechaPago: string | null;
+}
+
+export interface ResumenComisiones {
+  vendedorId: number | null;
+  cantidadVentas: number;
+  totalPendiente: number;
+  totalPagado: number;
+  total: number;
+}
+
+export interface FiltroComisiones {
+  vendedorId?: number;
+  estado?: EstadoComision;
+  desde?: string;
+  hasta?: string;
+  page: number;
+  size: number;
+}

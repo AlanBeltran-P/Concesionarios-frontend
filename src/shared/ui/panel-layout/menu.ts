@@ -35,6 +35,7 @@ export const MENU_PANEL: SeccionMenu[] = [
       { ruta: 'cotizaciones', texto: 'Cotizaciones', icono: 'documento', roles: EMPLEADOS },
       { ruta: 'ventas', texto: 'Ventas', icono: 'recibo', roles: EMPLEADOS },
       { ruta: 'financiamiento', texto: 'Financiamiento', icono: 'tarjeta', roles: EMPLEADOS },
+      { ruta: 'comisiones', texto: 'Comisiones', icono: 'porcentaje', roles: EMPLEADOS },
     ],
   },
   {

@@ -145,6 +145,17 @@ SECCIONES['financiamiento'] = [
   { path: ':id', title: 'Estado de cuenta · Concesionaria', loadComponent: estadoCuenta },
 ];
 
+SECCIONES['comisiones'] = [
+  {
+    path: '',
+    title: 'Comisiones · Concesionaria',
+    loadComponent: () =>
+      import('../features/ventas/components/listado-comisiones/listado-comisiones').then(
+        (m) => m.ListadoComisiones,
+      ),
+  },
+];
+
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },

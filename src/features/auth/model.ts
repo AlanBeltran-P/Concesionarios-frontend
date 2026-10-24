@@ -31,3 +31,20 @@ export interface Sesion {
   refreshToken: string;
   usuario: Usuario;
 }
+
+export interface FiltroUsuarios {
+  rol?: Rol;
+  activo?: boolean;
+  texto?: string;
+  page: number;
+  size: number;
+}
+
+/** El ADMIN da de alta empleados: el rol solo puede ser ADMIN o VENDEDOR. */
+export interface NuevoEmpleado {
+  email: string;
+  password: string;
+  nombre: string;
+  apellido: string;
+  rol: Exclude<Rol, 'CLIENTE'>;
+}

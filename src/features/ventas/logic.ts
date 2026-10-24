@@ -1,6 +1,7 @@
 import { hoyISO } from '../../shared/utils/formato';
 import { Tono } from '../../shared/ui/etiqueta/etiqueta';
 import {
+  EstadoComision,
   EstadoCotizacion,
   EstadoReserva,
   EstadoTasacion,
@@ -106,3 +107,9 @@ export function cuentaVenta(datos: {
     maximoFinanciable: Math.max(0, Math.min(saldo, topePlan)),
   };
 }
+
+export const ESTADO_COMISION: Record<EstadoComision, { texto: string; tono: Tono }> = {
+  PENDIENTE: { texto: 'A pagar', tono: 'aviso' },
+  PAGADA: { texto: 'Pagada', tono: 'exito' },
+  ANULADA: { texto: 'Anulada', tono: 'neutro' },
+};
