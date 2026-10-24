@@ -1,4 +1,4 @@
-import { PATRON_VIN, anioMaximo, estadosSiguientes } from './logic';
+import { PATRON_VIN, anioMaximo, errorDeImagen, estadosSiguientes } from './logic';
 
 describe('estadosSiguientes', () => {
   it('sigue las reglas del backend', () => {
@@ -22,5 +22,23 @@ describe('validaciones', () => {
 
   it('el año máximo es el que viene', () => {
     expect(anioMaximo(new Date(2026, 9, 24))).toBe(2027);
+  });
+});
+
+describe('errorDeImagen', () => {
+  const archivo = (name: string, type: string, mb: number) => ({
+    name,
+    type,
+    size: mb * 1024 * 1024,
+  });
+
+  it('acepta JPG, PNG y WEBP de hasta 5 MB', () => {
+    expect(errorDeImagen(archivo('a.jpg', 'image/jpeg', 2))).toBeNull();
+    expect(errorDeImagen(archivo('a.webp', 'image/webp', 5))).toBeNull();
+  });
+
+  it('rechaza otros tipos y los muy pesados', () => {
+    expect(errorDeImagen(archivo('a.gif', 'image/gif', 1))).toContain('JPG, PNG o WEBP');
+    expect(errorDeImagen(archivo('a.png', 'image/png', 6))).toContain('5 MB');
   });
 });

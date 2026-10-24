@@ -113,7 +113,16 @@
                     <span
                       class="hidden size-11 shrink-0 place-items-center overflow-hidden rounded-md bg-subtle text-fg-disabled sm:grid"
                     >
-                      <app-icono nombre="auto" class="size-6" />
+                      @if (v.imagenPrincipalUrl) {
+                        <img
+                          [src]="url(v.imagenPrincipalUrl)"
+                          alt=""
+                          loading="lazy"
+                          class="size-full object-cover"
+                        />
+                      } @else {
+                        <app-icono nombre="auto" class="size-6" />
+                      }
                     </span>
                     <div class="flex min-w-0 flex-col">
                       <!-- El enlace cubre toda la fila (after:inset-0) -->

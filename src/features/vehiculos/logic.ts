@@ -66,3 +66,17 @@ export function aResumen(v: Vehiculo): VehiculoResumen {
     imagenPrincipalUrl: v.imagenes.find((i) => i.principal)?.url ?? null,
   };
 }
+
+/** Mismos límites que vehiculo-service (multipart y vehiculos.imagenes). */
+export const TIPOS_IMAGEN = ['image/jpeg', 'image/png', 'image/webp'];
+export const MAX_MB_IMAGEN = 5;
+export const MAX_FOTOS = 10;
+
+/** Error para mostrar si el archivo no se puede subir, o null. */
+export function errorDeImagen(archivo: Pick<File, 'type' | 'size' | 'name'>): string | null {
+  if (!TIPOS_IMAGEN.includes(archivo.type))
+    return `${archivo.name}: tiene que ser JPG, PNG o WEBP.`;
+  if (archivo.size > MAX_MB_IMAGEN * 1024 * 1024)
+    return `${archivo.name}: pesa más de ${MAX_MB_IMAGEN} MB.`;
+  return null;
+}

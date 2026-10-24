@@ -8,6 +8,7 @@ import {
   Categoria,
   EstadoVehiculo,
   FiltroVehiculos,
+  ImagenVehiculo,
   Marca,
   Modelo,
   Vehiculo,
@@ -64,6 +65,27 @@ export class VehiculosService {
   /** Solo ADMIN. */
   reactivar(id: number): Observable<Vehiculo> {
     return this.http.post<Vehiculo>(`${this.api}/vehiculos/${id}/reactivar`, null);
+  }
+
+  /** RF-10. JPG, PNG o WEBP de hasta 5 MB; la primera queda como principal. */
+  subirImagen(vehiculoId: number, archivo: File, principal = false): Observable<ImagenVehiculo> {
+    const datos = new FormData();
+    datos.append('archivo', archivo);
+    return this.http.post<ImagenVehiculo>(`${this.api}/vehiculos/${vehiculoId}/imagenes`, datos, {
+      params: { principal },
+    });
+  }
+
+  /** Si era la principal, pasa a serlo la siguiente. */
+  eliminarImagen(vehiculoId: number, imagenId: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/vehiculos/${vehiculoId}/imagenes/${imagenId}`);
+  }
+
+  marcarPrincipal(vehiculoId: number, imagenId: number): Observable<ImagenVehiculo> {
+    return this.http.patch<ImagenVehiculo>(
+      `${this.api}/vehiculos/${vehiculoId}/imagenes/${imagenId}/principal`,
+      null,
+    );
   }
 
   /** Solo las activas: son las que se pueden elegir al cargar un vehículo. */

@@ -3,6 +3,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { Icono } from '../../../../shared/ui/icono/icono';
 import { formatearKm, formatearPrecio } from '../../../../shared/utils/formato';
+import { urlDelBackend } from '../../../../shared/utils/http';
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
 import { ETIQUETA_CONDICION, ETIQUETA_ESTADO, OPCIONES_ORDEN } from '../../logic';
@@ -26,6 +27,7 @@ export class ListadoVehiculos {
 
   protected readonly formatearPrecio = formatearPrecio;
   protected readonly formatearKm = formatearKm;
+  protected readonly url = urlDelBackend;
   protected readonly etiquetaCondicion = ETIQUETA_CONDICION;
   protected readonly opcionesOrden = OPCIONES_ORDEN;
   protected readonly estados = Object.entries(ETIQUETA_ESTADO) as [EstadoVehiculo, string][];

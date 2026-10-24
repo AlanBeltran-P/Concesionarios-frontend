@@ -1,0 +1,84 @@
+<section class="tarjeta flex flex-col gap-4 p-6" aria-labelledby="titulo-fotos">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-col gap-1">
+      <h2 id="titulo-fotos" class="text-h4">Fotos</h2>
+      <p class="text-sm text-fg-muted">
+        {{ imagenes().length }} de {{ maximo }} · JPG, PNG o WEBP de hasta 5 MB. La principal es la
+        que se ve en el catálogo.
+      </p>
+    </div>
+    @if (!deshabilitado() && lugares() > 0) {
+      <label class="boton boton-secundario cursor-pointer" [class.opacity-60]="!!subiendo()">
+        {{ subiendo() ? 'Subiendo…' : 'Agregar fotos' }}
+        <input
+          #archivo
+          type="file"
+          class="sr-only"
+          multiple
+          [accept]="tipos"
+          [disabled]="!!subiendo()"
+          (change)="elegirArchivos(archivo)"
+        />
+      </label>
+    }
+  </div>
+
+  @if (subiendo(); as s) {
+    <p role="status" class="text-sm text-fg-secondary">Subiendo {{ s.total }} fotos…</p>
+  }
+  @for (e of errores(); track $index) {
+    <p role="alert" class="rounded-md bg-danger-bg px-4 py-2 text-sm text-danger">{{ e }}</p>
+  }
+
+  @if (imagenes().length) {
+    <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      @for (img of imagenes(); track img.id) {
+        <li class="group relative overflow-hidden rounded-md border border-line bg-subtle">
+          <img
+            [src]="url(img.url)"
+            [alt]="img.nombreArchivo"
+            loading="lazy"
+            class="aspect-[4/3] w-full object-cover"
+          />
+          @if (img.principal) {
+            <span
+              class="absolute top-2 left-2 rounded-full bg-inverse px-2.5 py-1 text-xs font-medium text-fg-inverse"
+            >
+              Principal
+            </span>
+          }
+          @if (!deshabilitado()) {
+            <div class="flex gap-1 border-t border-line bg-surface p-1.5">
+              @if (!img.principal) {
+                <button
+                  type="button"
+                  class="boton h-8 flex-1 px-2 text-xs hover:bg-subtle"
+                  [disabled]="ocupado()"
+                  (click)="hacerPrincipal(img)"
+                >
+                  Hacer principal
+                </button>
+              }
+              <button
+                type="button"
+                class="boton h-8 px-2 text-xs text-danger hover:bg-danger-bg"
+                [class.flex-1]="img.principal"
+                [attr.aria-label]="'Borrar ' + img.nombreArchivo"
+                [disabled]="ocupado()"
+                (click)="eliminar(img)"
+              >
+                Borrar
+              </button>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  } @else {
+    <p
+      class="rounded-md border border-dashed border-line-strong px-6 py-10 text-center text-sm text-fg-muted"
+    >
+      Todavía no tiene fotos.
+    </p>
+  }
+</section>

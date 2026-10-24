@@ -309,5 +309,13 @@
         </aside>
       }
     </div>
+
+    @if (actual(); as v) {
+      <app-fotos-vehiculo
+        [vehiculoId]="v.id"
+        [imagenesIniciales]="v.imagenes"
+        [deshabilitado]="!v.activo"
+      />
+    }
   }
 </div>
