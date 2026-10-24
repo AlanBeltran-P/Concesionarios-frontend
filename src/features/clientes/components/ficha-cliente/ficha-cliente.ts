@@ -11,7 +11,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { Etiqueta } from '../../../../shared/ui/etiqueta/etiqueta';
 import { Icono } from '../../../../shared/ui/icono/icono';
-import { formatearFecha } from '../../../../shared/utils/formato';
+import { formatearFecha, hoyISO } from '../../../../shared/utils/formato';
 import { mostrarErroresEnFormulario } from '../../../../shared/utils/formularios';
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
@@ -81,7 +81,7 @@ export class FichaCliente {
   protected readonly tiposDocumento = TIPOS_DOCUMENTO;
   protected readonly provincias = PROVINCIAS;
   protected readonly formatearFecha = formatearFecha;
-  protected readonly hoy = new Date().toISOString().slice(0, 10);
+  protected readonly hoy = hoyISO();
 
   protected readonly form = this.fb.group(
     {

@@ -1,0 +1,154 @@
+<div class="flex flex-col gap-6">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-h2">Cotizaciones</h1>
+      <p class="text-sm text-fg-muted">Pedidos de precio del portal y cotizaciones del local</p>
+    </div>
+    <a routerLink="nueva" class="boton boton-primario">
+      <app-icono nombre="mas" class="size-[18px]" />
+      Nueva cotización
+    </a>
+  </header>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <nav class="flex gap-1 rounded-md bg-subtle p-1" aria-label="Vistas">
+      @for (v of vistas; track v.vista) {
+        <button
+          type="button"
+          class="rounded-[7px] px-4 py-2 text-sm font-medium transition"
+          [class.bg-surface]="actual() === v.vista"
+          [class.shadow-sm]="actual() === v.vista"
+          [class.text-fg]="actual() === v.vista"
+          [class.text-fg-secondary]="actual() !== v.vista"
+          [attr.aria-pressed]="actual() === v.vista"
+          (click)="cambiarVista(v.vista)"
+        >
+          {{ v.texto }}
+        </button>
+      }
+    </nav>
+    @if (actual() !== 'pendientes') {
+      <label class="w-full sm:w-56">
+        <span class="sr-only">Estado</span>
+        <select class="campo" (change)="filtrarEstado($any($event.target).value)">
+          <option value="" [selected]="!estado()">Todos los estados</option>
+          @for (e of estados; track e[0]) {
+            <option [value]="e[0]" [selected]="estado() === e[0]">{{ e[1].texto }}</option>
+          }
+        </select>
+      </label>
+    } @else {
+      <p class="text-sm text-fg-muted">
+        Pedidos del portal que nadie atendió. Al responder uno, queda a tu nombre.
+      </p>
+    }
+  </div>
+
+  @if (error(); as mensaje) {
+    <div
+      role="alert"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-md bg-danger-bg px-4 py-3 text-sm text-danger"
+    >
+      {{ mensaje }}
+      <button type="button" class="boton boton-secundario h-9" (click)="reintentar()">
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <section
+      class="tarjeta overflow-hidden"
+      aria-label="Cotizaciones"
+      [attr.aria-busy]="cargando()"
+    >
+      <table class="w-full text-left text-sm">
+        <thead
+          class="border-b border-line bg-subtle text-xs font-semibold tracking-[0.04em] text-fg-muted uppercase"
+        >
+          <tr>
+            <th scope="col" class="px-4 py-3 sm:px-5">Cliente y vehículo</th>
+            <th scope="col" class="hidden px-5 py-3 md:table-cell">Vendedor</th>
+            <th scope="col" class="hidden px-5 py-3 lg:table-cell">Pedida</th>
+            <th scope="col" class="px-4 py-3 text-right sm:px-5">Precio</th>
+            <th scope="col" class="hidden px-5 py-3 sm:table-cell">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-line" [class.opacity-60]="cargando()">
+          @for (c of datos()?.content ?? []; track c.id) {
+            <tr class="relative transition hover:bg-subtle">
+              <td class="px-4 py-3.5 sm:px-5">
+                <div class="flex min-w-0 flex-col">
+                  <a
+                    [routerLink]="[c.id]"
+                    class="truncate font-medium after:absolute after:inset-0 focus-visible:outline-none"
+                  >
+                    {{ c.clienteNombre }}
+                  </a>
+                  <span class="truncate text-xs text-fg-muted">{{ c.vehiculo }}</span>
+                </div>
+              </td>
+              <td class="hidden px-5 py-3.5 text-fg-secondary md:table-cell">
+                {{ c.vendedorNombre ?? 'Sin asignar' }}
+              </td>
+              <td class="hidden px-5 py-3.5 whitespace-nowrap text-fg-secondary lg:table-cell">
+                {{ formatearFecha(c.fechaSolicitud) }}
+              </td>
+              <td class="px-4 py-3.5 text-right whitespace-nowrap sm:px-5">
+                <span class="font-display font-semibold">
+                  {{ formatearPrecio(c.precioFinal ?? c.precioLista) }}
+                </span>
+                <app-etiqueta
+                  class="mt-1 block font-sans sm:hidden"
+                  [tono]="estadoCotizacion[c.estado].tono"
+                >
+                  {{ estadoCotizacion[c.estado].texto }}
+                </app-etiqueta>
+              </td>
+              <td class="hidden px-5 py-3.5 sm:table-cell">
+                <app-etiqueta [tono]="estadoCotizacion[c.estado].tono">
+                  {{ estadoCotizacion[c.estado].texto }}
+                </app-etiqueta>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
+                {{ cargando() ? 'Cargando cotizaciones…' : textoVacio() }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      @if (datos()?.page; as p) {
+        @if (p.totalPages > 1) {
+          <nav
+            class="flex items-center justify-between gap-3 border-t border-line px-5 py-3 text-sm"
+            aria-label="Paginado"
+          >
+            <span class="text-fg-muted">{{ rango() }}</span>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="boton boton-secundario h-9"
+                [disabled]="p.number === 0"
+                (click)="pagina.set(p.number - 1)"
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                class="boton boton-secundario h-9"
+                [disabled]="p.number + 1 >= p.totalPages"
+                (click)="pagina.set(p.number + 1)"
+              >
+                Siguiente
+              </button>
+            </div>
+          </nav>
+        } @else if (p.totalElements > 0) {
+          <p class="border-t border-line px-5 py-3 text-sm text-fg-muted">{{ rango() }}</p>
+        }
+      }
+    </section>
+  }
+</div>

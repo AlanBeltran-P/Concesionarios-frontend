@@ -80,6 +80,23 @@ SECCIONES['clientes'] = [
   },
 ];
 
+const fichaCotizacion = () =>
+  import('../features/ventas/components/ficha-cotizacion/ficha-cotizacion').then(
+    (m) => m.FichaCotizacion,
+  );
+SECCIONES['cotizaciones'] = [
+  {
+    path: '',
+    title: 'Cotizaciones · Concesionaria',
+    loadComponent: () =>
+      import('../features/ventas/components/listado-cotizaciones/listado-cotizaciones').then(
+        (m) => m.ListadoCotizaciones,
+      ),
+  },
+  { path: 'nueva', title: 'Nueva cotización · Concesionaria', loadComponent: fichaCotizacion },
+  { path: ':id', title: 'Cotización · Concesionaria', loadComponent: fichaCotizacion },
+];
+
 /** Rutas dentro de /panel: una por ítem del menú, con los mismos roles. */
 export const PANEL_ROUTES: Routes = [
   { path: '', pathMatch: 'full', canActivate: [inicioDelPanel], children: [] },

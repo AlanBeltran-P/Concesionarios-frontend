@@ -1,0 +1,232 @@
+<div class="flex flex-col gap-3">
+  @if (error(); as mensaje) {
+    <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">{{ mensaje }}</p>
+  }
+
+  @if (errorCarga(); as mensaje) {
+    <p class="text-sm text-danger">{{ mensaje }}</p>
+  } @else if (cargando()) {
+    <p class="text-sm text-fg-muted">Cargando tasaciones…</p>
+  } @else {
+    <ul class="flex flex-col gap-2">
+      <li>
+        <label
+          class="flex cursor-pointer items-center gap-3 rounded-md border px-3.5 py-3 text-sm"
+          [class.border-fg]="!elegida()"
+          [class.border-line]="!!elegida()"
+        >
+          <input
+            type="radio"
+            name="tasacion"
+            class="accent-fg"
+            [checked]="!elegida()"
+            [disabled]="deshabilitado()"
+            (change)="elegir(null)"
+          />
+          Sin auto usado
+        </label>
+      </li>
+      @for (t of lista(); track t.id) {
+        <li
+          class="flex flex-wrap items-center gap-3 rounded-md border px-3.5 py-3 text-sm"
+          [class.border-fg]="elegida()?.id === t.id"
+          [class.border-line]="elegida()?.id !== t.id"
+        >
+          <label class="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+            <input
+              type="radio"
+              name="tasacion"
+              class="accent-fg"
+              [checked]="elegida()?.id === t.id"
+              [disabled]="deshabilitado() || !utilizable(t)"
+              (change)="elegir(t)"
+            />
+            <span class="flex min-w-0 flex-col">
+              <span class="font-medium" [class.text-fg-muted]="!utilizable(t)">
+                {{ t.modelo }} {{ t.anio }} · {{ formatearPrecio(t.valorTasado) }}
+              </span>
+              <span class="truncate text-xs text-fg-muted">
+                {{ t.color }} · {{ formatearKm(t.kilometraje) }}
+                @if (t.fechaValidez) {
+                  · vale hasta el {{ formatearFecha(t.fechaValidez) }}
+                }
+              </span>
+            </span>
+          </label>
+          <app-etiqueta [tono]="estado[t.estado].tono">{{ estado[t.estado].texto }}</app-etiqueta>
+          @if (t.estado === 'PENDIENTE' && !deshabilitado()) {
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="boton boton-secundario h-8 px-3"
+                [disabled]="ocupado()"
+                (click)="decidir(t, 'ACEPTADA')"
+              >
+                Aceptó
+              </button>
+              <button
+                type="button"
+                class="boton boton-secundario h-8 px-3"
+                [disabled]="ocupado()"
+                (click)="decidir(t, 'RECHAZADA')"
+              >
+                Rechazó
+              </button>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  @if (!deshabilitado()) {
+    @if (!tasando()) {
+      <button type="button" class="boton boton-secundario w-fit" (click)="tasando.set(true)">
+        Tasar un auto usado
+      </button>
+    } @else {
+      <!-- No es un <form> porque va dentro del formulario de la cotización -->
+      <div
+        [formGroup]="form"
+        class="flex flex-col gap-4 rounded-md border border-line bg-subtle p-4"
+      >
+        <p class="text-sm font-medium">Nueva tasación</p>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label for="t-marca" class="etiqueta">Marca</label>
+            <select
+              id="t-marca"
+              formControlName="marcaId"
+              class="campo"
+              [class.campo-invalido]="errorDe('marcaId')"
+              (change)="form.controls.modeloId.setValue(null)"
+            >
+              <option [ngValue]="null" disabled>Elegí una marca</option>
+              @for (m of marcas(); track m.id) {
+                <option [ngValue]="m.id">{{ m.nombre }}</option>
+              }
+            </select>
+            @if (errorDe('marcaId'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="t-modelo" class="etiqueta">Modelo</label>
+            <select
+              id="t-modelo"
+              formControlName="modeloId"
+              class="campo"
+              [class.campo-invalido]="errorDe('modeloId')"
+            >
+              <option [ngValue]="null" disabled>Elegí un modelo</option>
+              @for (m of modelos(); track m.id) {
+                <option [ngValue]="m.id">{{ m.nombre }}</option>
+              }
+            </select>
+            @if (errorDe('modeloId'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="t-anio" class="etiqueta">Año</label>
+            <input
+              id="t-anio"
+              type="number"
+              formControlName="anio"
+              class="campo"
+              [class.campo-invalido]="errorDe('anio')"
+            />
+            @if (errorDe('anio'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="t-color" class="etiqueta">Color</label>
+            <input
+              id="t-color"
+              type="text"
+              formControlName="color"
+              class="campo"
+              [class.campo-invalido]="errorDe('color')"
+            />
+            @if (errorDe('color'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="t-km" class="etiqueta">Kilometraje</label>
+            <input
+              id="t-km"
+              type="number"
+              formControlName="kilometraje"
+              class="campo"
+              [class.campo-invalido]="errorDe('kilometraje')"
+            />
+            @if (errorDe('kilometraje'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="t-vin" class="etiqueta">VIN</label>
+            <input
+              id="t-vin"
+              type="text"
+              maxlength="17"
+              formControlName="vin"
+              class="campo font-mono uppercase"
+              [class.campo-invalido]="errorDe('vin')"
+            />
+            @if (errorDe('vin'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="t-valor" class="etiqueta">Valor tasado ($)</label>
+            <input
+              id="t-valor"
+              type="number"
+              formControlName="valorTasado"
+              class="campo"
+              [class.campo-invalido]="errorDe('valorTasado')"
+            />
+            @if (errorDe('valorTasado'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="t-dias" class="etiqueta">Días de validez</label>
+            <input
+              id="t-dias"
+              type="number"
+              formControlName="diasValidez"
+              class="campo"
+              [class.campo-invalido]="errorDe('diasValidez')"
+            />
+            @if (errorDe('diasValidez'); as e) {
+              <p class="error-campo">{{ e }}</p>
+            }
+          </div>
+          <div class="flex flex-col gap-1.5 sm:col-span-2">
+            <label for="t-obs" class="etiqueta">
+              Observaciones <span class="font-normal text-fg-muted">(opcional)</span>
+            </label>
+            <input id="t-obs" type="text" formControlName="observaciones" class="campo" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" class="boton boton-secundario" (click)="tasando.set(false)">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="boton boton-primario"
+            [disabled]="ocupado()"
+            (click)="guardar()"
+          >
+            Guardar tasación
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

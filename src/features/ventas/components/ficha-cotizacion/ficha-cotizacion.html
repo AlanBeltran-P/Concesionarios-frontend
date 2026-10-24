@@ -1,0 +1,295 @@
+<div class="flex flex-col gap-6">
+  <a
+    routerLink="/panel/cotizaciones"
+    class="inline-flex w-fit items-center gap-1 text-sm font-medium text-fg-secondary hover:text-fg"
+  >
+    <app-icono nombre="flecha-izquierda" class="size-4" />
+    Cotizaciones
+  </a>
+
+  @if (errorCarga(); as mensaje) {
+    <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
+      <p class="font-medium">{{ mensaje }}</p>
+      <a routerLink="/panel/cotizaciones" class="boton boton-secundario">Volver a cotizaciones</a>
+    </div>
+  } @else if (!esNueva() && !cotizacion()) {
+    <p class="py-14 text-center text-fg-muted">Cargando cotización…</p>
+  } @else {
+    <header class="flex flex-wrap items-center gap-3">
+      @if (cotizacion(); as c) {
+        <h1 class="text-h2">Cotización #{{ c.id }}</h1>
+        <app-etiqueta [tono]="estadoCotizacion[c.estado].tono">
+          {{ estadoCotizacion[c.estado].texto }}
+        </app-etiqueta>
+      } @else {
+        <h1 class="text-h2">Nueva cotización</h1>
+      }
+    </header>
+
+    @if (aviso(); as mensaje) {
+      <div
+        role="status"
+        class="flex items-center gap-2 rounded-md bg-success-bg px-4 py-3 text-sm text-success"
+      >
+        <app-icono nombre="check" class="size-4" />
+        {{ mensaje }}
+      </div>
+    }
+    @if (error(); as mensaje) {
+      <div role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
+        {{ mensaje }}
+      </div>
+    }
+
+    <div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+      <div class="flex flex-col gap-6 lg:col-span-2">
+        <!-- Cliente y vehículo -->
+        <section class="tarjeta flex flex-col gap-5 p-6">
+          <h2 class="text-h4">Cliente y vehículo</h2>
+          @if (cotizacion(); as c) {
+            <dl class="grid gap-4 text-sm sm:grid-cols-2">
+              <div class="flex flex-col gap-1">
+                <dt class="text-fg-muted">Cliente</dt>
+                <dd>
+                  <a [routerLink]="['/panel/clientes', c.clienteId]" class="font-medium underline">
+                    {{ c.clienteNombre }}
+                  </a>
+                </dd>
+              </div>
+              <div class="flex flex-col gap-1">
+                <dt class="text-fg-muted">Vehículo</dt>
+                <dd>
+                  <a
+                    [routerLink]="['/panel/vehiculos', c.vehiculoId]"
+                    class="font-medium underline"
+                  >
+                    {{ c.vehiculo }}
+                  </a>
+                </dd>
+              </div>
+              <div class="flex flex-col gap-1">
+                <dt class="text-fg-muted">Vendedor</dt>
+                <dd>{{ c.vendedorNombre ?? 'Sin asignar' }}</dd>
+              </div>
+              <div class="flex flex-col gap-1">
+                <dt class="text-fg-muted">Pedida</dt>
+                <dd>{{ formatearFecha(c.fechaSolicitud) }}</dd>
+              </div>
+            </dl>
+            @if (c.mensajeCliente) {
+              <blockquote class="rounded-md bg-subtle px-4 py-3 text-sm">
+                <span class="mb-1 block text-xs font-medium text-fg-muted">
+                  Lo que pidió el cliente
+                </span>
+                {{ c.mensajeCliente }}
+              </blockquote>
+            }
+          } @else {
+            <div class="flex flex-col gap-2">
+              <span class="etiqueta">Cliente</span>
+              <app-buscador
+                etiqueta="Cliente"
+                placeholder="Buscar por nombre, email o documento"
+                vacio="No hay clientes con esa búsqueda."
+                [buscar]="buscarClientes"
+                [principal]="nombreCliente"
+                [secundario]="detalleCliente"
+                [invalido]="intento() && !!errores()['cliente']"
+                [seleccionado]="cliente()"
+                (seleccionadoChange)="elegirCliente($event)"
+              />
+              @if (intento() && errores()['cliente']; as e) {
+                <p class="error-campo">{{ e }}</p>
+              }
+              <p class="text-xs text-fg-muted">
+                ¿No está cargado?
+                <a routerLink="/panel/clientes/nuevo" class="font-medium text-fg underline">
+                  Cargalo acá
+                </a>
+                y después volvé.
+              </p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <span class="etiqueta">Vehículo</span>
+              <app-buscador
+                etiqueta="Vehículo"
+                placeholder="Buscar por marca, modelo o VIN"
+                vacio="No hay vehículos disponibles con esa búsqueda."
+                [buscar]="buscarVehiculos"
+                [principal]="nombreVehiculo"
+                [secundario]="detalleVehiculo"
+                [invalido]="intento() && !!errores()['vehiculo']"
+                [(seleccionado)]="vehiculo"
+              />
+              @if (intento() && errores()['vehiculo']; as e) {
+                <p class="error-campo">{{ e }}</p>
+              }
+            </div>
+          }
+        </section>
+
+        <!-- Precio y respuesta -->
+        @if (puedeResponder()) {
+          <section class="tarjeta flex flex-col gap-5 p-6">
+            <h2 class="text-h4">
+              {{
+                cotizacion()?.estado === 'RESPONDIDA'
+                  ? 'Corregir la respuesta'
+                  : 'Precio y respuesta'
+              }}
+            </h2>
+
+            <div class="grid gap-5 sm:grid-cols-2">
+              <div class="flex flex-col gap-2">
+                <label for="descuento" class="etiqueta">Descuento ($)</label>
+                <input
+                  id="descuento"
+                  type="number"
+                  min="0"
+                  class="campo"
+                  [class.campo-invalido]="intento() && errores()['descuento']"
+                  [value]="descuento() || ''"
+                  placeholder="0"
+                  (input)="descuento.set(numero($any($event.target).value))"
+                />
+                @if (intento() && errores()['descuento']; as e) {
+                  <p class="error-campo">{{ e }}</p>
+                } @else if (maximo() !== null && precioLista()) {
+                  <p class="text-xs text-fg-muted">
+                    Hasta {{ formatearPrecio(maximo()!) }} ({{ topeVendedor }} % del precio).
+                  </p>
+                }
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="dias" class="etiqueta">Válida por (días)</label>
+                <input
+                  id="dias"
+                  type="number"
+                  min="1"
+                  max="60"
+                  class="campo"
+                  [class.campo-invalido]="intento() && errores()['dias']"
+                  [value]="diasValidez()"
+                  (input)="diasValidez.set(numero($any($event.target).value))"
+                />
+                @if (intento() && errores()['dias']; as e) {
+                  <p class="error-campo">{{ e }}</p>
+                }
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <span class="etiqueta">Auto usado como parte de pago</span>
+              @if (clienteId(); as idCliente) {
+                <app-tasaciones-cliente
+                  [clienteId]="idCliente"
+                  [idInicial]="cotizacion()?.tasacionId ?? null"
+                  [(elegida)]="tasacion"
+                />
+              } @else {
+                <p class="text-sm text-fg-muted">Elegí primero el cliente.</p>
+              }
+              @if (intento() && errores()['tasacion']; as e) {
+                <p class="error-campo">{{ e }}</p>
+              }
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label for="respuesta" class="etiqueta">Respuesta para el cliente</label>
+              <textarea
+                id="respuesta"
+                rows="3"
+                maxlength="1000"
+                class="campo resize-y"
+                [class.campo-invalido]="intento() && errores()['respuesta']"
+                placeholder="Ej.: Te lo dejamos con un descuento por pago de contado."
+                [value]="respuesta()"
+                (input)="respuesta.set($any($event.target).value)"
+              ></textarea>
+              @if (intento() && errores()['respuesta']; as e) {
+                <p class="error-campo">{{ e }}</p>
+              }
+            </div>
+
+            <div class="flex justify-end gap-3 border-t border-line pt-4">
+              <button
+                type="button"
+                class="boton boton-primario"
+                [disabled]="guardando()"
+                (click)="guardar()"
+              >
+                @if (guardando()) {
+                  Guardando…
+                } @else if (esNueva()) {
+                  Enviar cotización
+                } @else if (cotizacion()?.estado === 'RESPONDIDA') {
+                  Guardar corrección
+                } @else {
+                  Responder
+                }
+              </button>
+            </div>
+          </section>
+        } @else if (cotizacion(); as c) {
+          <section class="tarjeta flex flex-col gap-3 p-6 text-sm">
+            <h2 class="text-h4">Respuesta</h2>
+            @if (atendidaPorOtro()) {
+              <p class="text-fg-muted">La atiende {{ c.vendedorNombre }}.</p>
+            }
+            <p class="whitespace-pre-line">{{ c.respuestaVendedor ?? 'Sin respuesta.' }}</p>
+          </section>
+        }
+      </div>
+
+      <!-- Resumen -->
+      <aside class="tarjeta flex flex-col gap-4 p-6">
+        <h2 class="text-h4">Resumen</h2>
+        <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 text-sm">
+          <dt class="text-fg-muted">Precio de lista</dt>
+          <dd class="text-right">{{ precioLista() ? formatearPrecio(precioLista()) : '—' }}</dd>
+          <dt class="text-fg-muted">Descuento</dt>
+          <dd class="text-right">
+            {{ descuento() ? '− ' + formatearPrecio(descuento()) : '—' }}
+          </dd>
+          <dt class="text-fg-muted">Auto usado</dt>
+          <dd class="text-right">
+            {{ tasacion() ? '− ' + formatearPrecio(tasacion()!.valorTasado) : '—' }}
+          </dd>
+        </dl>
+        <div class="flex items-baseline justify-between border-t border-line pt-3">
+          <span class="text-sm font-medium">Total</span>
+          <span class="text-price">{{ precioLista() ? formatearPrecio(total()) : '—' }}</span>
+        </div>
+
+        @if (cotizacion(); as c) {
+          @if (c.fechaValidez) {
+            <p class="text-xs text-fg-muted">
+              Válida hasta el {{ formatearFecha(c.fechaValidez) }}.
+            </p>
+          }
+          @if (c.estado === 'RESPONDIDA') {
+            <div class="flex flex-col gap-2 border-t border-line pt-4">
+              <p class="text-sm text-fg-secondary">¿Qué decidió el cliente?</p>
+              <button
+                type="button"
+                class="boton boton-primario w-full"
+                [disabled]="guardando()"
+                (click)="decidir('aceptar')"
+              >
+                Aceptó
+              </button>
+              <button
+                type="button"
+                class="boton boton-secundario w-full"
+                [disabled]="guardando()"
+                (click)="decidir('rechazar')"
+              >
+                Rechazó
+              </button>
+            </div>
+          }
+        }
+      </aside>
+    </div>
+  }
+</div>

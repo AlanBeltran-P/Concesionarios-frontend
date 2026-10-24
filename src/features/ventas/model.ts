@@ -73,3 +73,60 @@ export interface Venta {
   fechaVenta: string;
   fechaAnulacion: string | null;
 }
+
+/** UTILIZADA = se tomó como parte de pago en una venta y el auto ya entró al inventario. */
+export type EstadoTasacion = 'PENDIENTE' | 'ACEPTADA' | 'RECHAZADA' | 'UTILIZADA';
+
+/** Tasación del auto usado que el cliente entrega como parte de pago (trade-in). */
+export interface Tasacion {
+  id: number;
+  clienteId: number;
+  vendedorId: number;
+  vin: string;
+  modeloId: number;
+  modelo: string;
+  anio: number;
+  color: string;
+  kilometraje: number;
+  observaciones: string | null;
+  valorTasado: number;
+  estado: EstadoTasacion;
+  fechaValidez: string | null;
+  vehiculoIngresadoId: number | null;
+  fechaTasacion: string;
+}
+
+export interface TasacionRequest {
+  clienteId: number;
+  vin: string;
+  modeloId: number;
+  anio: number;
+  color: string;
+  kilometraje: number;
+  observaciones: string | null;
+  valorTasado: number;
+  diasValidez: number | null;
+}
+
+/** Respuesta del vendedor a una cotización (o alta de una cotización del local, con clienteId y vehiculoId). */
+export interface RespuestaCotizacion {
+  descuento: number | null;
+  tasacionId: number | null;
+  respuesta: string;
+  diasValidez: number | null;
+}
+
+export interface NuevaCotizacion extends RespuestaCotizacion {
+  clienteId: number;
+  vehiculoId: number;
+}
+
+export interface FiltroCotizaciones {
+  estado?: EstadoCotizacion;
+  clienteId?: number;
+  vendedorId?: number;
+  /** Las pedidas desde el portal que nadie atendió todavía. */
+  sinAsignar?: boolean;
+  page: number;
+  size: number;
+}

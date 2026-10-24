@@ -1,0 +1,68 @@
+@if (seleccionado(); as item) {
+  <div
+    class="flex items-center justify-between gap-3 rounded-md border border-line-strong bg-subtle px-3.5 py-2.5"
+  >
+    <div class="flex min-w-0 flex-col">
+      <span class="truncate text-sm font-medium">{{ principal()(item) }}</span>
+      @if (secundario()(item); as detalle) {
+        <span class="truncate text-xs text-fg-muted">{{ detalle }}</span>
+      }
+    </div>
+    @if (!deshabilitado()) {
+      <button type="button" class="boton boton-secundario h-8 px-3" (click)="cambiar()">
+        Cambiar
+      </button>
+    }
+  </div>
+} @else {
+  <div class="relative">
+    <app-icono
+      nombre="buscar"
+      class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-fg-muted"
+    />
+    <input
+      type="search"
+      role="combobox"
+      autocomplete="off"
+      class="campo pl-10"
+      [class.campo-invalido]="invalido()"
+      [placeholder]="placeholder()"
+      [attr.aria-label]="etiqueta() || placeholder()"
+      [attr.aria-expanded]="abierto()"
+      [attr.aria-controls]="idLista"
+      [disabled]="deshabilitado()"
+      [value]="texto()"
+      (input)="escribir($any($event.target).value)"
+      (focus)="abrir()"
+      (blur)="cerrar()"
+      (keydown)="teclear($event)"
+    />
+    @if (abierto()) {
+      <ul
+        [id]="idLista"
+        role="listbox"
+        class="absolute inset-x-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-md border border-line bg-surface py-1 shadow-lg"
+      >
+        @for (item of resultados(); track item.id; let i = $index) {
+          <li
+            role="option"
+            [attr.aria-selected]="activo() === i"
+            class="flex cursor-pointer flex-col px-3.5 py-2"
+            [class.bg-subtle]="activo() === i"
+            (mouseenter)="activo.set(i)"
+            (mousedown)="$event.preventDefault(); elegir(item)"
+          >
+            <span class="text-sm font-medium">{{ principal()(item) }}</span>
+            @if (secundario()(item); as detalle) {
+              <span class="text-xs text-fg-muted">{{ detalle }}</span>
+            }
+          </li>
+        } @empty {
+          <li class="px-3.5 py-3 text-sm text-fg-muted">
+            {{ buscando() ? 'Buscando…' : vacio() }}
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}
