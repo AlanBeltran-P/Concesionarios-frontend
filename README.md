@@ -67,6 +67,19 @@ está corriendo, frenalo antes (`docker compose stop frontend`), porque usa el m
 El backend crea un administrador: `admin@concesionaria.com` / `Admin12345`. Desde **Usuarios** se
 dan de alta los vendedores. Los clientes se registran solos en el sitio.
 
+### Datos de ejemplo
+
+Con la base vacía, el catálogo no muestra nada. El repositorio del backend tiene un script que carga
+vehículos con fotos, clientes, ventas, cuotas y cotizaciones. Desde `concesionaria/`:
+
+```bash
+python datos-demo/cargar_datos.py
+```
+
+También crea dos vendedores (`vera.gomez@concesionaria.com` / `Vendedor12345`) y un cliente con
+compras y cotizaciones (`cliente.demo@mail.com` / `Cliente12345`). El detalle está en el
+[README del backend](https://github.com/AlanBeltran-P/Sistema-de-Gestion-para-Concesionarios#datos-de-ejemplo).
+
 ## Quién ve qué
 
 | Rol | Dónde trabaja | Qué puede hacer |
