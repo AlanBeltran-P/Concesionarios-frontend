@@ -1,0 +1,130 @@
+<div class="flex min-h-screen flex-col bg-page">
+  <!-- Barra de navegación -->
+  <header class="sticky top-0 z-30 border-b border-line bg-surface">
+    <div class="mx-auto flex h-[76px] max-w-[1280px] items-center justify-between gap-4 px-4 sm:px-8">
+      <a routerLink="/" class="flex items-center gap-2.5" (click)="menuAbierto.set(false)">
+        <span class="grid size-[34px] place-items-center rounded-sm bg-primary text-on-primary">
+          <app-icono nombre="auto" class="size-5" />
+        </span>
+        <span class="font-display text-h4">Concesionaria</span>
+      </a>
+
+      <nav class="hidden items-center gap-9 md:flex" aria-label="Principal">
+        @for (e of enlaces; track e.ruta) {
+          <a
+            [routerLink]="e.ruta"
+            routerLinkActive
+            #activo="routerLinkActive"
+            [routerLinkActiveOptions]="{ exact: e.exacto }"
+            ariaCurrentWhenActive="page"
+            class="text-sm font-medium transition hover:text-fg"
+            [class.text-fg]="activo.isActive"
+            [class.text-fg-secondary]="!activo.isActive"
+          >
+            {{ e.texto }}
+          </a>
+        }
+      </nav>
+
+      <div class="flex items-center gap-2">
+        @if (usuario(); as u) {
+          @if (esEmpleado()) {
+            <a routerLink="/panel" class="boton boton-primario hidden sm:inline-flex">Ir al panel</a>
+          }
+          <span class="hidden text-sm text-fg-secondary lg:inline">Hola, {{ u.nombre }}</span>
+          <button type="button" class="boton boton-secundario hidden sm:inline-flex" (click)="salir()">
+            Salir
+          </button>
+        } @else {
+          <a routerLink="/auth/login" class="boton boton-secundario hidden sm:inline-flex">Ingresar</a>
+        }
+        <button
+          type="button"
+          class="rounded-sm p-2 text-fg-secondary hover:text-fg md:hidden"
+          aria-label="Abrir menú"
+          aria-controls="menu-sitio"
+          [attr.aria-expanded]="menuAbierto()"
+          (click)="menuAbierto.set(!menuAbierto())"
+        >
+          <app-icono [nombre]="menuAbierto() ? 'cerrar' : 'menu'" class="size-5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Menú en celular -->
+    @if (menuAbierto()) {
+      <nav
+        id="menu-sitio"
+        class="flex flex-col gap-1 border-t border-line px-4 py-3 md:hidden"
+        aria-label="Principal"
+      >
+        @for (e of enlaces; track e.ruta) {
+          <a
+            [routerLink]="e.ruta"
+            class="rounded-md px-3 py-2.5 text-sm font-medium hover:bg-subtle"
+            (click)="menuAbierto.set(false)"
+          >
+            {{ e.texto }}
+          </a>
+        }
+        <div class="mt-2 flex gap-2 border-t border-line pt-3">
+          @if (usuario()) {
+            @if (esEmpleado()) {
+              <a routerLink="/panel" class="boton boton-primario flex-1" (click)="menuAbierto.set(false)">
+                Ir al panel
+              </a>
+            }
+            <button type="button" class="boton boton-secundario flex-1" (click)="salir()">Salir</button>
+          } @else {
+            <a
+              routerLink="/auth/login"
+              class="boton boton-primario flex-1"
+              (click)="menuAbierto.set(false)"
+            >
+              Ingresar
+            </a>
+          }
+        </div>
+      </nav>
+    }
+  </header>
+
+  <main class="flex-1">
+    <router-outlet />
+  </main>
+
+  <!-- Pie -->
+  <footer class="bg-inverse text-fg-inverse">
+    <div class="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 pt-14 pb-8 sm:px-8">
+      <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]">
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-2.5">
+            <span class="grid size-[34px] place-items-center rounded-sm bg-surface text-fg">
+              <app-icono nombre="auto" class="size-5" />
+            </span>
+            <span class="font-display text-h4">Concesionaria</span>
+          </div>
+          <p class="max-w-xs text-sm text-fg-inverse-muted">
+            Compra, venta y financiación de vehículos 0 km y usados.
+          </p>
+        </div>
+        <div class="flex flex-col gap-3 text-sm">
+          <p class="text-xs font-semibold tracking-[0.08em] text-fg-inverse-muted uppercase">Explorar</p>
+          @for (e of enlaces; track e.ruta) {
+            <a [routerLink]="e.ruta" class="hover:underline">{{ e.texto }}</a>
+          }
+          <a routerLink="/auth/login" class="hover:underline">Ingresar</a>
+        </div>
+        <div class="flex flex-col gap-3 text-sm">
+          <p class="text-xs font-semibold tracking-[0.08em] text-fg-inverse-muted uppercase">Contacto</p>
+          <span>{{ empresa.direccion }}</span>
+          <span>{{ empresa.telefono }}</span>
+        </div>
+      </div>
+      <div class="flex flex-wrap justify-between gap-3 border-t border-inverse-soft pt-6 text-xs text-fg-inverse-muted">
+        <span>© {{ anio }} {{ empresa.nombre }}</span>
+        <span>Precios en pesos argentinos.</span>
+      </div>
+    </div>
+  </footer>
+</div>

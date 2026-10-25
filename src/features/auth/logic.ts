@@ -25,12 +25,20 @@ export const rolGuard =
 export const invitadoGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  return auth.autenticado() ? router.createUrlTree(['/']) : true;
+  return auth.autenticado() ? router.createUrlTree([inicioDe(auth.usuario()?.rol)]) : true;
 };
 
-/** Adónde ir después del login. Solo rutas internas, para que ?redirect= no pueda mandar a otro sitio. */
-export function destinoDespuesDelLogin(redirect: string | undefined): string {
-  return redirect?.startsWith('/') && !redirect.startsWith('//') ? redirect : '/';
+/** La pantalla de inicio de cada rol: los empleados van al panel; los clientes, al sitio. */
+export function inicioDe(rol: Rol | undefined): string {
+  return rol === 'ADMIN' || rol === 'VENDEDOR' ? '/panel' : '/';
+}
+
+/**
+ * Adónde ir después del login: la página que pidió (solo rutas internas, para que
+ * ?redirect= no pueda mandar a otro sitio) o el inicio de su rol.
+ */
+export function destinoDespuesDelLogin(redirect: string | undefined, rol?: Rol): string {
+  return redirect?.startsWith('/') && !redirect.startsWith('//') ? redirect : inicioDe(rol);
 }
 
 /** Misma regla que @PasswordSegura del backend. Devuelve el error o null. */

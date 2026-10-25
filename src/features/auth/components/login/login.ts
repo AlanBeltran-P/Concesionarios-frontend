@@ -45,7 +45,10 @@ export class Login {
     this.error.set(null);
 
     this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => void this.router.navigateByUrl(destinoDespuesDelLogin(this.redirect())),
+      next: () =>
+        void this.router.navigateByUrl(
+          destinoDespuesDelLogin(this.redirect(), this.auth.usuario()?.rol),
+        ),
       error: (err: unknown) => {
         this.error.set(mensajeDeError(err));
         this.cargando.set(false);

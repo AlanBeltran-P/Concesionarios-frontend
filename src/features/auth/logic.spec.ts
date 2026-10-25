@@ -16,5 +16,7 @@ describe('destinoDespuesDelLogin', () => {
     expect(destinoDespuesDelLogin('//otro-sitio.com')).toBe('/');
     expect(destinoDespuesDelLogin('https://otro-sitio.com')).toBe('/');
     expect(destinoDespuesDelLogin(undefined)).toBe('/');
+    expect(destinoDespuesDelLogin(undefined, 'VENDEDOR')).toBe('/panel');
+    expect(destinoDespuesDelLogin(undefined, 'CLIENTE')).toBe('/');
   });
 });

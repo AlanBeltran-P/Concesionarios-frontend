@@ -71,7 +71,7 @@ describe('Login', () => {
     expect(navegar).toHaveBeenCalledWith('/ventas');
   });
 
-  it('ignora redirecciones a otros sitios', async () => {
+  it('ignora redirecciones a otros sitios y manda al inicio de su rol', async () => {
     const navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     fixture.componentRef.setInput('redirect', '//sitio-malicioso.com');
     completar('admin@concesionaria.com', 'secreta');
@@ -83,6 +83,6 @@ describe('Login', () => {
       expiraEn: 1800,
       usuario: { id: 1, email: 'admin@concesionaria.com', rol: 'ADMIN' },
     });
-    expect(navegar).toHaveBeenCalledWith('/');
+    expect(navegar).toHaveBeenCalledWith('/panel');
   });
 });

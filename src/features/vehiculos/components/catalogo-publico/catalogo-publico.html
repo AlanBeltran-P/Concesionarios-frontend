@@ -1,0 +1,219 @@
+<!-- Hero con buscador -->
+<section class="bg-inverse text-fg-inverse">
+  <div class="mx-auto flex max-w-[1280px] flex-col gap-10 px-4 pt-16 pb-14 sm:px-8 lg:pt-20">
+    <div class="flex max-w-3xl flex-col gap-4">
+      <p class="text-xs font-semibold tracking-[0.08em] text-fg-inverse-muted uppercase">
+        Concesionaria · 0 km y usados
+      </p>
+      <h1 class="text-h1 sm:text-display">Encontrá tu próximo auto</h1>
+      <p class="max-w-xl text-lg text-fg-inverse-muted">
+        Vehículos 0 km y usados con planes de financiación a tu medida. Aceptamos tu usado como
+        parte de pago.
+      </p>
+    </div>
+
+    <form
+      class="grid gap-4 rounded-xl bg-surface p-5 text-fg shadow-lg sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end lg:p-6"
+      role="search"
+      (submit)="$event.preventDefault(); buscar()"
+    >
+      <label class="flex flex-col gap-1.5">
+        <span class="etiqueta">Marca</span>
+        <select
+          class="campo"
+          (change)="marcaBuscador.set(numero($any($event.target).value)); modeloBuscador.set(null)"
+        >
+          <option value="" [selected]="!marcaBuscador()">Todas las marcas</option>
+          @for (m of marcas(); track m.id) {
+            <option [value]="m.id" [selected]="marcaBuscador() === m.id">{{ m.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="flex flex-col gap-1.5">
+        <span class="etiqueta">Modelo</span>
+        <select
+          class="campo"
+          [disabled]="!marcaBuscador()"
+          (change)="modeloBuscador.set(numero($any($event.target).value))"
+        >
+          <option value="" [selected]="!modeloBuscador()">Todos los modelos</option>
+          @for (m of modelos(); track m.id) {
+            <option [value]="m.id" [selected]="modeloBuscador() === m.id">{{ m.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+        <span class="etiqueta">Precio máximo</span>
+        <select class="campo" (change)="precioBuscador.set(numero($any($event.target).value))">
+          <option value="" [selected]="!precioBuscador()">Sin límite</option>
+          @for (p of precios; track p) {
+            <option [value]="p" [selected]="precioBuscador() === p">Hasta {{ formatearPrecio(p) }}</option>
+          }
+        </select>
+      </label>
+      <button type="submit" class="boton boton-primario h-11 sm:col-span-2 lg:col-span-1">
+        <app-icono nombre="buscar" class="size-[18px]" />
+        Buscar vehículos
+      </button>
+    </form>
+
+    @if (datos()?.page; as p) {
+      <p class="text-sm text-fg-inverse-muted">
+        <span class="font-display text-h3 text-fg-inverse">{{ p.totalElements }}</span>
+        {{ p.totalElements === 1 ? 'vehículo disponible' : 'vehículos disponibles' }}
+        {{ hayFiltros() ? 'con esta búsqueda' : 'ahora' }}
+      </p>
+    }
+  </div>
+</section>
+
+<!-- Catálogo -->
+<section id="resultados" class="mx-auto flex max-w-[1280px] scroll-mt-20 flex-col gap-8 px-4 py-12 sm:px-8 lg:flex-row lg:items-start">
+  <!-- Filtros -->
+  <details class="tarjeta group lg:sticky lg:top-24 lg:w-[296px] lg:shrink-0" open>
+    <summary
+      class="flex cursor-pointer list-none items-center justify-between gap-3 p-5 lg:pointer-events-none"
+    >
+      <h2 class="text-h4">Filtros</h2>
+      <app-icono nombre="filtros" class="size-[18px] text-fg-secondary" />
+    </summary>
+    <div class="flex flex-col gap-5 px-5 pb-5">
+      <div class="flex flex-col gap-2">
+        <span class="etiqueta">Condición</span>
+        <div class="grid grid-cols-3 gap-1 rounded-md bg-subtle p-1">
+          @for (c of [['', 'Todos'], ['NUEVO', '0 km'], ['USADO', 'Usados']]; track c[0]) {
+            <button
+              type="button"
+              class="h-9 rounded-[7px] text-sm font-medium transition"
+              [class.bg-surface]="(filtro().condicion ?? '') === c[0]"
+              [class.shadow-sm]="(filtro().condicion ?? '') === c[0]"
+              [class.text-fg]="(filtro().condicion ?? '') === c[0]"
+              [class.text-fg-secondary]="(filtro().condicion ?? '') !== c[0]"
+              [attr.aria-pressed]="(filtro().condicion ?? '') === c[0]"
+              (click)="filtrar({ condicion: c[0] || null })"
+            >
+              {{ c[1] }}
+            </button>
+          }
+        </div>
+      </div>
+      <label class="flex flex-col gap-2">
+        <span class="etiqueta">Marca</span>
+        <select class="campo" (change)="filtrar({ marcaId: $any($event.target).value || null, modeloId: null })">
+          <option value="" [selected]="!filtro().marcaId">Todas</option>
+          @for (m of marcas(); track m.id) {
+            <option [value]="m.id" [selected]="filtro().marcaId === m.id">{{ m.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="flex flex-col gap-2">
+        <span class="etiqueta">Categoría</span>
+        <select class="campo" (change)="filtrar({ categoriaId: $any($event.target).value || null })">
+          <option value="" [selected]="!filtro().categoriaId">Todas</option>
+          @for (c of categorias(); track c.id) {
+            <option [value]="c.id" [selected]="filtro().categoriaId === c.id">{{ c.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="flex flex-col gap-2">
+        <span class="etiqueta">Año</span>
+        <select class="campo" (change)="filtrar({ anioMin: $any($event.target).value || null })">
+          <option value="" [selected]="!filtro().anioMin">Todos</option>
+          @for (a of anios; track a) {
+            <option [value]="a" [selected]="filtro().anioMin === a">Desde {{ a }}</option>
+          }
+        </select>
+      </label>
+      <label class="flex flex-col gap-2">
+        <span class="etiqueta">Precio máximo</span>
+        <select class="campo" (change)="filtrar({ precioMax: $any($event.target).value || null })">
+          <option value="" [selected]="!filtro().precioMax">Sin límite</option>
+          @for (p of precios; track p) {
+            <option [value]="p" [selected]="filtro().precioMax === p">Hasta {{ formatearPrecio(p) }}</option>
+          }
+        </select>
+      </label>
+      <button type="button" class="boton boton-secundario" [disabled]="!hayFiltros()" (click)="limpiar()">
+        Limpiar filtros
+      </button>
+    </div>
+  </details>
+
+  <!-- Resultados -->
+  <div class="flex min-w-0 flex-1 flex-col gap-6">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div class="flex flex-col gap-1">
+        <h2 class="text-h2">Vehículos disponibles</h2>
+        <p class="text-sm text-fg-muted">
+          @if (datos()?.page; as p) {
+            {{ p.totalElements }} {{ p.totalElements === 1 ? 'resultado' : 'resultados' }}
+          }
+        </p>
+      </div>
+      <label class="flex flex-col gap-1.5">
+        <span class="text-xs font-medium text-fg-muted">Ordenar por</span>
+        <select class="campo w-56" (change)="filtrar({ orden: $any($event.target).value })">
+          @for (o of opcionesOrden; track o.valor) {
+            <option [value]="o.valor" [selected]="filtro().sort === o.valor">{{ o.texto }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (error(); as mensaje) {
+      <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">{{ mensaje }}</p>
+    } @else {
+      <ul
+        class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
+        [class.opacity-60]="cargando()"
+        [attr.aria-busy]="cargando()"
+      >
+        @for (v of datos()?.content ?? []; track v.id) {
+          <li><app-tarjeta-vehiculo [v]="v" /></li>
+        } @empty {
+          <li class="tarjeta col-span-full flex flex-col items-center gap-3 px-6 py-16 text-center">
+            @if (cargando()) {
+              <span class="text-fg-muted">Cargando vehículos…</span>
+            } @else {
+              <span class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted">
+                <app-icono nombre="auto" class="size-6" />
+              </span>
+              <p class="font-medium">No hay vehículos con esa búsqueda</p>
+              @if (hayFiltros()) {
+                <button type="button" class="boton boton-secundario" (click)="limpiar()">
+                  Ver todos
+                </button>
+              }
+            }
+          </li>
+        }
+      </ul>
+
+      @if (datos()?.page; as p) {
+        @if (p.totalPages > 1) {
+          <nav class="flex items-center justify-center gap-3 pt-4" aria-label="Páginas">
+            <button
+              type="button"
+              class="boton boton-secundario"
+              [disabled]="p.number === 0"
+              (click)="irAPagina(p.number - 1)"
+            >
+              <app-icono nombre="flecha-izquierda" class="size-4" />
+              Anterior
+            </button>
+            <span class="text-sm text-fg-secondary">Página {{ p.number + 1 }} de {{ p.totalPages }}</span>
+            <button
+              type="button"
+              class="boton boton-secundario"
+              [disabled]="p.number + 1 >= p.totalPages"
+              (click)="irAPagina(p.number + 1)"
+            >
+              Siguiente
+              <app-icono nombre="flecha-derecha" class="size-4" />
+            </button>
+          </nav>
+        }
+      }
+    }
+  </div>
+</section>

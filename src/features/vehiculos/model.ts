@@ -94,6 +94,10 @@ export type OrdenVehiculos =
 export interface FiltroVehiculos {
   texto?: string;
   marcaId?: number;
+  modeloId?: number;
+  categoriaId?: number;
+  precioMax?: number;
+  anioMin?: number;
   condicion?: CondicionVehiculo;
   estado?: EstadoVehiculo;
   page: number;

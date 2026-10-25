@@ -1,0 +1,201 @@
+<div class="mx-auto flex max-w-[1280px] flex-col gap-8 px-4 pt-8 pb-16 sm:px-8 lg:pb-20">
+  @if (errorCarga(); as mensaje) {
+    <div class="tarjeta flex flex-col items-center gap-4 px-6 py-16 text-center">
+      <span class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted">
+        <app-icono nombre="auto" class="size-6" />
+      </span>
+      <p class="font-medium" role="alert">{{ mensaje }}</p>
+      <a routerLink="/" class="boton boton-primario">Ver el catálogo</a>
+    </div>
+  } @else if (vehiculo(); as v) {
+    <!-- Migas -->
+    <nav aria-label="Ubicación">
+      <ol class="flex flex-wrap items-center gap-2 text-sm text-fg-muted">
+        <li><a routerLink="/" class="hover:text-fg">Catálogo</a></li>
+        <li aria-hidden="true"><app-icono nombre="flecha-derecha" class="size-3.5 text-fg-disabled" /></li>
+        <li>
+          <a routerLink="/" [queryParams]="{ marcaId: v.marcaId }" class="hover:text-fg">{{ v.marca }}</a>
+        </li>
+        <li aria-hidden="true"><app-icono nombre="flecha-derecha" class="size-3.5 text-fg-disabled" /></li>
+        <li class="font-medium text-fg" aria-current="page">{{ v.modelo }} {{ v.anio }}</li>
+      </ol>
+    </nav>
+
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_460px]">
+      <!-- Galería -->
+      <section class="flex min-w-0 flex-col gap-3" aria-label="Fotos">
+        <div
+          class="relative grid aspect-[16/10] place-items-center overflow-hidden rounded-xl bg-gradient-to-b from-subtle to-muted text-fg-disabled"
+        >
+          @if (fotos()[actual()]; as foto) {
+            <img
+              [src]="url(foto.url)"
+              [alt]="v.marca + ' ' + v.modelo + ', foto ' + (actual() + 1) + ' de ' + fotos().length"
+              class="absolute inset-0 size-full object-cover"
+            />
+          } @else {
+            <app-icono nombre="auto" class="size-24" />
+          }
+
+          @if (fotos().length > 1) {
+            <button
+              type="button"
+              class="absolute top-1/2 left-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-surface/90 text-fg shadow-sm transition hover:bg-surface"
+              aria-label="Foto anterior"
+              (click)="anterior()"
+            >
+              <app-icono nombre="flecha-izquierda" class="size-5" />
+            </button>
+            <button
+              type="button"
+              class="absolute top-1/2 right-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-surface/90 text-fg shadow-sm transition hover:bg-surface"
+              aria-label="Foto siguiente"
+              (click)="siguiente()"
+            >
+              <app-icono nombre="flecha-derecha" class="size-5" />
+            </button>
+          }
+          @if (fotos().length) {
+            <span
+              class="absolute bottom-4 left-4 rounded-full bg-inverse/85 px-3 py-1.5 text-xs font-medium text-fg-inverse"
+              aria-live="polite"
+            >
+              {{ actual() + 1 }} / {{ fotos().length }}
+            </span>
+          }
+        </div>
+
+        @if (fotos().length > 1) {
+          <ul class="grid grid-cols-4 gap-3 sm:grid-cols-5">
+            @for (foto of fotos(); track foto.id; let i = $index) {
+              <li>
+                <button
+                  type="button"
+                  class="relative block aspect-[4/3] w-full overflow-hidden rounded-md bg-subtle outline-offset-2 transition hover:opacity-100"
+                  [class.ring-2]="i === actual()"
+                  [class.ring-primary]="i === actual()"
+                  [class.opacity-70]="i !== actual()"
+                  [attr.aria-label]="'Ver foto ' + (i + 1)"
+                  [attr.aria-current]="i === actual()"
+                  (click)="elegir(i)"
+                >
+                  <img [src]="url(foto.url)" alt="" loading="lazy" class="absolute inset-0 size-full object-cover" />
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <!-- Resumen -->
+      <aside class="tarjeta flex h-fit flex-col gap-5 p-6 shadow-md sm:p-8 lg:sticky lg:top-24">
+        <div class="flex flex-wrap gap-2">
+          <app-etiqueta [tono]="disponible() ? 'exito' : 'aviso'">
+            {{ v.activo ? estado[v.estado] : 'No publicado' }}
+          </app-etiqueta>
+          <app-etiqueta>{{ condicion[v.condicion] }}</app-etiqueta>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <p class="text-xs font-semibold tracking-[0.08em] text-fg-muted uppercase">{{ v.marca }}</p>
+          <h1 class="text-h2">{{ v.modelo }} {{ v.anio }}</h1>
+          <p class="text-fg-secondary">{{ subtitulo() }}</p>
+        </div>
+
+        <div class="flex flex-col gap-1 rounded-lg bg-subtle px-5 py-4">
+          <span class="text-xs font-medium text-fg-muted">Precio de contado</span>
+          <span class="font-display text-h1">{{ formatearPrecio(v.precio) }}</span>
+          @if (maximoCuotas(); as n) {
+            <span class="text-sm text-fg-secondary">o financialo hasta en {{ n }} cuotas fijas</span>
+          }
+        </div>
+
+        @if (esEmpleado()) {
+          <a [routerLink]="['/panel/vehiculos', v.id]" class="boton boton-primario">
+            Abrir en el panel
+            <app-icono nombre="flecha-derecha" class="size-4" />
+          </a>
+          <p class="-mt-2 text-xs text-fg-muted">Así lo ven los clientes en el sitio.</p>
+        } @else if (disponible()) {
+          @if (usuario()) {
+            <!-- El portal del cliente llega en el punto 11 -->
+            <button type="button" class="boton boton-primario" disabled>Reservar vehículo</button>
+            <button type="button" class="boton boton-secundario" disabled>Solicitar cotización</button>
+            <p class="-mt-2 text-xs text-fg-muted">Muy pronto vas a poder cotizar y reservar desde tu cuenta.</p>
+          } @else {
+            <a routerLink="/auth/login" [queryParams]="{ redirect: redirect() }" class="boton boton-primario">
+              Reservar vehículo
+              <app-icono nombre="flecha-derecha" class="size-4" />
+            </a>
+            <a routerLink="/auth/login" [queryParams]="{ redirect: redirect() }" class="boton boton-secundario">
+              <app-icono nombre="documento" class="size-4" />
+              Solicitar cotización
+            </a>
+            <p class="-mt-2 text-xs text-fg-muted">Ingresá con tu cuenta para cotizar o reservar.</p>
+          }
+        } @else {
+          <p class="rounded-md bg-warning-bg px-4 py-3 text-sm text-warning">
+            {{ v.estado === 'VENDIDO' ? 'Este vehículo ya se vendió.' : 'Este vehículo está reservado.' }}
+          </p>
+          <a routerLink="/" [queryParams]="{ marcaId: v.marcaId, modeloId: v.modeloId }" class="boton boton-secundario">
+            Ver otros {{ v.marca }} {{ v.modelo }}
+          </a>
+        }
+
+        <hr class="border-muted" />
+        <ul class="flex flex-col gap-3 text-sm text-fg-secondary">
+          <li class="flex items-center gap-2.5">
+            <app-icono nombre="escudo" class="size-[18px] shrink-0" />
+            {{ v.condicion === 'NUEVO' ? 'Garantía oficial de fábrica' : 'Garantía de 12 meses' }}
+          </li>
+          <li class="flex items-center gap-2.5">
+            <app-icono nombre="check" class="size-[18px] shrink-0" />
+            Aceptamos tu usado como parte de pago
+          </li>
+          <li class="flex items-center gap-2.5">
+            <app-icono nombre="documento" class="size-[18px] shrink-0" />
+            Documentación al día y transferencia incluida
+          </li>
+        </ul>
+      </aside>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_460px]">
+      <div class="flex min-w-0 flex-col gap-6">
+        <!-- Especificaciones -->
+        <section class="tarjeta flex flex-col gap-4 p-6 sm:p-7" aria-labelledby="titulo-specs">
+          <h2 id="titulo-specs" class="text-h3">Especificaciones</h2>
+          <dl class="grid gap-x-6 sm:grid-cols-2">
+            @for (e of especificaciones(); track e[0]) {
+              <div class="flex items-center justify-between gap-4 border-b border-line py-3">
+                <dt class="text-fg-muted">{{ e[0] }}</dt>
+                <dd class="text-right font-medium">{{ e[1] }}</dd>
+              </div>
+            }
+          </dl>
+        </section>
+
+        <!-- Descripción -->
+        @if (v.descripcion) {
+          <section class="tarjeta flex flex-col gap-3 p-6 sm:p-7" aria-labelledby="titulo-descripcion">
+            <h2 id="titulo-descripcion" class="text-h3">Descripción</h2>
+            <p class="whitespace-pre-line text-fg-secondary">{{ v.descripcion }}</p>
+          </section>
+        }
+      </div>
+
+      @if (disponible()) {
+        <div class="flex flex-col gap-3">
+          <app-simulador-publico [precio]="v.precio" />
+          <a routerLink="/financiacion" class="boton boton-secundario">Ver todos los planes</a>
+        </div>
+      }
+    </div>
+  } @else if (cargando()) {
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_460px]" aria-busy="true">
+      <div class="aspect-[16/10] animate-pulse rounded-xl bg-subtle"></div>
+      <div class="h-96 animate-pulse rounded-lg bg-subtle"></div>
+      <span class="sr-only">Cargando vehículo…</span>
+    </div>
+  }
+</div>
