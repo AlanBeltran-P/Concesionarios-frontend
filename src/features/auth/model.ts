@@ -10,6 +10,14 @@ export interface Usuario {
   fechaCreacion: string;
 }
 
+/** RF-02: el cliente se registra solo en el portal. */
+export interface RegistroRequest {
+  email: string;
+  password: string;
+  nombre: string;
+  apellido: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

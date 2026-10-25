@@ -1,5 +1,12 @@
-import { cuentaVenta, descuentoMaximo, precioFinal, senaMinima, tasacionUtilizable } from './logic';
-import { Tasacion } from './model';
+import {
+  cotizacionReservable,
+  cuentaVenta,
+  descuentoMaximo,
+  precioFinal,
+  senaMinima,
+  tasacionUtilizable,
+} from './logic';
+import { Cotizacion, Tasacion } from './model';
 
 describe('reglas de precio', () => {
   it('el vendedor descuenta hasta el 15 %; el ADMIN no tiene tope', () => {
@@ -55,5 +62,20 @@ describe('cuentaVenta', () => {
 
   it('seña mínima del 5 %', () => {
     expect(senaMinima(29_000_000)).toBe(1_450_000);
+  });
+});
+
+describe('cotizacionReservable', () => {
+  const base = { estado: 'RESPONDIDA', fechaValidez: '2026-10-30' } as Cotizacion;
+
+  it('respondida o aceptada y vigente: se puede reservar', () => {
+    expect(cotizacionReservable(base, '2026-10-30')).toBe(true);
+    expect(cotizacionReservable({ ...base, estado: 'ACEPTADA' }, '2026-10-25')).toBe(true);
+  });
+
+  it('vencida, sin responder o rechazada: no', () => {
+    expect(cotizacionReservable(base, '2026-10-31')).toBe(false);
+    expect(cotizacionReservable({ ...base, estado: 'SOLICITADA', fechaValidez: null }, '2026-10-25')).toBe(false);
+    expect(cotizacionReservable({ ...base, estado: 'RECHAZADA' }, '2026-10-25')).toBe(false);
   });
 });

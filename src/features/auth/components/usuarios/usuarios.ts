@@ -7,14 +7,13 @@ import { Paginado } from '../../../../shared/ui/paginado/paginado';
 import { formatearFecha } from '../../../../shared/utils/formato';
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
-import { NOMBRE_ROL, errorDePassword } from '../../logic';
+import { NOMBRE_ROL, PATRON_EMAIL, errorDePassword } from '../../logic';
 import { Rol, Usuario } from '../../model';
 import { AuthService } from '../../services/auth.service';
 import { UsuariosService } from '../../services/usuarios.service';
 
 type RolEmpleado = 'ADMIN' | 'VENDEDOR';
 
-const PATRON_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Usuarios del sistema (RF-01, RF-06). Solo ADMIN. */
 @Component({

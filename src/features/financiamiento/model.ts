@@ -113,6 +113,7 @@ export interface EstadoCuenta {
     cuotasPagadas: number;
     cuotasPendientes: number;
     cuotasVencidas: number;
+    /** Monto de todas las cuotas juntas (no la cantidad: esa es financiamiento.cantidadCuotas). */
     totalCuotas: number;
     totalPagadoCuotas: number;
     moraAcumulada: number;

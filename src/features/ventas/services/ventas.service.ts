@@ -4,7 +4,15 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pagina } from '../../../shared/types/pagina';
 import { aParams } from '../../../shared/utils/http';
-import { FiltroReservas, FiltroVentas, NuevaReserva, NuevaVenta, Reserva, Venta } from '../model';
+import {
+  FiltroReservas,
+  FiltroVentas,
+  NuevaReserva,
+  NuevaVenta,
+  Reserva,
+  ReservaDelCliente,
+  Venta,
+} from '../model';
 
 /** Reservas con seña (RF-21, RF-22, RF-26) y ventas (RF-23 a RF-27). */
 @Injectable({ providedIn: 'root' })
@@ -12,6 +20,25 @@ export class VentasService {
   private readonly http = inject(HttpClient);
   private readonly urlReservas = `${environment.apiUrl}/reservas`;
   private readonly urlVentas = `${environment.apiUrl}/ventas`;
+
+  /** RF-21 desde el portal: el cliente reserva a su nombre. */
+  reservarComoCliente(datos: ReservaDelCliente): Observable<Reserva> {
+    return this.http.post<Reserva>(this.urlReservas, datos);
+  }
+
+  /** Las del cliente logueado. */
+  misReservas(page: number, size: number): Observable<Pagina<Reserva>> {
+    return this.http.get<Pagina<Reserva>>(`${this.urlReservas}/mias`, {
+      params: aParams({ page, size, sort: 'fechaReserva,desc' }),
+    });
+  }
+
+  /** Las compras del cliente logueado. */
+  misCompras(page: number, size: number): Observable<Pagina<Venta>> {
+    return this.http.get<Pagina<Venta>>(`${this.urlVentas}/mias`, {
+      params: aParams({ page, size, sort: 'fechaVenta,desc' }),
+    });
+  }
 
   buscarReservas(filtro: FiltroReservas): Observable<Pagina<Reserva>> {
     return this.http.get<Pagina<Reserva>>(this.urlReservas, { params: aParams(filtro) });

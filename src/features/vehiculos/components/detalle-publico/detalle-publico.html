@@ -118,10 +118,7 @@
           <p class="-mt-2 text-xs text-fg-muted">Así lo ven los clientes en el sitio.</p>
         } @else if (disponible()) {
           @if (usuario()) {
-            <!-- El portal del cliente llega en el punto 11 -->
-            <button type="button" class="boton boton-primario" disabled>Reservar vehículo</button>
-            <button type="button" class="boton boton-secundario" disabled>Solicitar cotización</button>
-            <p class="-mt-2 text-xs text-fg-muted">Muy pronto vas a poder cotizar y reservar desde tu cuenta.</p>
+            <app-acciones-cliente [vehiculo]="v" [cotizacionId]="cotizacionId()" />
           } @else {
             <a routerLink="/auth/login" [queryParams]="{ redirect: redirect() }" class="boton boton-primario">
               Reservar vehículo

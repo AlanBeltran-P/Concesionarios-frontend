@@ -30,6 +30,11 @@
         @if (usuario(); as u) {
           @if (esEmpleado()) {
             <a routerLink="/panel" class="boton boton-primario hidden sm:inline-flex">Ir al panel</a>
+          } @else {
+            <a routerLink="/cuenta" class="boton boton-primario hidden sm:inline-flex">
+              <app-icono nombre="usuario" class="size-4" />
+              Mi cuenta
+            </a>
           }
           <span class="hidden text-sm text-fg-secondary lg:inline">Hola, {{ u.nombre }}</span>
           <button type="button" class="boton boton-secundario hidden sm:inline-flex" (click)="salir()">
@@ -37,6 +42,7 @@
           </button>
         } @else {
           <a routerLink="/auth/login" class="boton boton-secundario hidden sm:inline-flex">Ingresar</a>
+          <a routerLink="/auth/registro" class="boton boton-primario hidden sm:inline-flex">Crear cuenta</a>
         }
         <button
           type="button"
@@ -73,15 +79,26 @@
               <a routerLink="/panel" class="boton boton-primario flex-1" (click)="menuAbierto.set(false)">
                 Ir al panel
               </a>
+            } @else {
+              <a routerLink="/cuenta" class="boton boton-primario flex-1" (click)="menuAbierto.set(false)">
+                Mi cuenta
+              </a>
             }
             <button type="button" class="boton boton-secundario flex-1" (click)="salir()">Salir</button>
           } @else {
             <a
               routerLink="/auth/login"
-              class="boton boton-primario flex-1"
+              class="boton boton-secundario flex-1"
               (click)="menuAbierto.set(false)"
             >
               Ingresar
+            </a>
+            <a
+              routerLink="/auth/registro"
+              class="boton boton-primario flex-1"
+              (click)="menuAbierto.set(false)"
+            >
+              Crear cuenta
             </a>
           }
         </div>
@@ -113,7 +130,10 @@
           @for (e of enlaces; track e.ruta) {
             <a [routerLink]="e.ruta" class="hover:underline">{{ e.texto }}</a>
           }
-          <a routerLink="/auth/login" class="hover:underline">Ingresar</a>
+          @if (!usuario()) {
+            <a routerLink="/auth/login" class="hover:underline">Ingresar</a>
+            <a routerLink="/auth/registro" class="hover:underline">Crear cuenta</a>
+          }
         </div>
         <div class="flex flex-col gap-3 text-sm">
           <p class="text-xs font-semibold tracking-[0.08em] text-fg-inverse-muted uppercase">Contacto</p>

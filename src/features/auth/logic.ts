@@ -41,6 +41,9 @@ export function destinoDespuesDelLogin(redirect: string | undefined, rol?: Rol):
   return redirect?.startsWith('/') && !redirect.startsWith('//') ? redirect : inicioDe(rol);
 }
 
+/** Validación básica de email (la completa la hace el backend). */
+export const PATRON_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 /** Misma regla que @PasswordSegura del backend. Devuelve el error o null. */
 export function errorDePassword(password: string): string | null {
   if (password.length < 8 || password.length > 72)

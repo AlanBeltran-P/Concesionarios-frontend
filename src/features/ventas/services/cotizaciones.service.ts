@@ -26,6 +26,18 @@ export class CotizacionesService {
     return this.http.get<Pagina<Cotizacion>>(this.url, { params: aParams(filtro) });
   }
 
+  /** RF-18: el cliente logueado pide precio por un vehículo. */
+  solicitar(vehiculoId: number, mensaje: string | null): Observable<Cotizacion> {
+    return this.http.post<Cotizacion>(`${this.url}/solicitudes`, { vehiculoId, mensaje });
+  }
+
+  /** Las del cliente logueado, las más nuevas primero. */
+  mias(page: number, size: number): Observable<Pagina<Cotizacion>> {
+    return this.http.get<Pagina<Cotizacion>>(`${this.url}/mias`, {
+      params: aParams({ page, size, sort: 'fechaSolicitud,desc' }),
+    });
+  }
+
   obtener(id: number): Observable<Cotizacion> {
     return this.http.get<Cotizacion>(`${this.url}/${id}`);
   }

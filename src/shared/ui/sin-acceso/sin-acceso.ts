@@ -18,15 +18,22 @@ import { Icono } from '../icono/icono';
         <h1 class="text-h3">No tenés acceso a esta página</h1>
         <p class="text-sm text-fg-secondary">
           @if (esCliente()) {
-            El panel de gestión es para empleados. El portal para clientes todavía no está
-            disponible.
+            El panel de gestión es para empleados. Tus compras, cotizaciones y reservas están en
+            tu cuenta.
           } @else {
             Tu rol no tiene permiso para ver esta sección. Si creés que es un error, hablá con un
             administrador.
           }
         </p>
         <div class="flex flex-wrap justify-center gap-3 pt-2">
-          @if (!esCliente()) {
+          @if (esCliente()) {
+            <a
+              routerLink="/cuenta"
+              class="flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-on-primary transition hover:bg-primary-hover"
+            >
+              Ir a mi cuenta
+            </a>
+          } @else {
             <a
               routerLink="/panel"
               class="flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-on-primary transition hover:bg-primary-hover"

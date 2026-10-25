@@ -1,6 +1,7 @@
 import { hoyISO } from '../../shared/utils/formato';
 import { Tono } from '../../shared/ui/etiqueta/etiqueta';
 import {
+  Cotizacion,
   EstadoComision,
   EstadoCotizacion,
   EstadoReserva,
@@ -17,6 +18,24 @@ export const ESTADO_COTIZACION: Record<EstadoCotizacion, { texto: string; tono: 
   RECHAZADA: { texto: 'Rechazada', tono: 'peligro' },
   VENCIDA: { texto: 'Vencida', tono: 'neutro' },
 };
+
+/** Los mismos estados, contados desde el lado del cliente (portal). */
+export const ESTADO_COTIZACION_CLIENTE: Record<EstadoCotizacion, { texto: string; tono: Tono }> = {
+  SOLICITADA: { texto: 'Esperando respuesta', tono: 'info' },
+  RESPONDIDA: { texto: 'Te respondieron', tono: 'aviso' },
+  ACEPTADA: { texto: 'Aceptada', tono: 'exito' },
+  RECHAZADA: { texto: 'Rechazada', tono: 'neutro' },
+  VENCIDA: { texto: 'Vencida', tono: 'neutro' },
+};
+
+/** El cliente puede reservar con el precio cotizado mientras siga vigente. */
+export function cotizacionReservable(c: Cotizacion, hoy = hoyISO()): boolean {
+  return (
+    (c.estado === 'RESPONDIDA' || c.estado === 'ACEPTADA') &&
+    !!c.fechaValidez &&
+    c.fechaValidez >= hoy
+  );
+}
 
 export const ESTADO_RESERVA: Record<EstadoReserva, { texto: string; tono: Tono }> = {
   ACTIVA: { texto: 'Activa', tono: 'aviso' },

@@ -33,3 +33,21 @@ export function mostrarErroresEnFormulario(
   }
   return quedanSinCampo ? mensajeDeError(err) : null;
 }
+
+/**
+ * Igual que mostrarErroresEnFormulario, pero para formularios hechos con signals:
+ * devuelve los errores por campo y el mensaje general (null si todo quedó en algún campo).
+ */
+export function erroresDelServidor(
+  err: unknown,
+  porMensaje: [RegExp, string][] = [],
+): { campos: Record<string, string>; general: string | null } {
+  const problema =
+    err instanceof HttpErrorResponse ? (err.error as Partial<ProblemDetail> | null) : null;
+  let campos = problema?.errores ?? {};
+  if (!problema?.errores && problema?.detail) {
+    const campo = porMensaje.find(([patron]) => patron.test(problema.detail!))?.[1];
+    if (campo) campos = { [campo]: problema.detail };
+  }
+  return { campos, general: Object.keys(campos).length ? null : mensajeDeError(err) };
+}

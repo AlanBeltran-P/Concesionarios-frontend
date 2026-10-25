@@ -4,9 +4,9 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Pagina } from '../../../shared/types/pagina';
 import { aParams } from '../../../shared/utils/http';
-import { Cliente, ClienteRequest, FiltroClientes, HistorialCliente } from '../model';
+import { Cliente, ClienteRequest, FiltroClientes, HistorialCliente, PerfilRequest } from '../model';
 
-/** Clientes del panel (ADMIN y VENDEDOR). */
+/** Clientes del panel (ADMIN y VENDEDOR) y el perfil del cliente logueado (portal). */
 @Injectable({ providedIn: 'root' })
 export class ClientesService {
   private readonly http = inject(HttpClient);
@@ -33,5 +33,14 @@ export class ClientesService {
 
   historial(id: number): Observable<HistorialCliente> {
     return this.http.get<HistorialCliente>(`${this.url}/${id}/historial`);
+  }
+
+  /** RF-15: el perfil del cliente logueado. */
+  miPerfil(): Observable<Cliente> {
+    return this.http.get<Cliente>(`${this.url}/me`);
+  }
+
+  actualizarMiPerfil(datos: PerfilRequest): Observable<Cliente> {
+    return this.http.put<Cliente>(`${this.url}/me`, datos);
   }
 }

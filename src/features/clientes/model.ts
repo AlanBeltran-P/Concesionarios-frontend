@@ -55,6 +55,18 @@ export interface FiltroClientes {
   size: number;
 }
 
+/**
+ * RF-15: el cliente completa su perfil desde el portal. Nombre y email vienen de su cuenta.
+ * El documento va completo (tipo y número juntos).
+ */
+export interface PerfilRequest {
+  tipoDocumento: TipoDocumento | null;
+  numeroDocumento: string | null;
+  telefono: string | null;
+  direccion: Direccion | null;
+  fechaNacimiento: string | null;
+}
+
 /** Todo lo que el cliente hizo con la concesionaria (RF-17). */
 export interface HistorialCliente {
   cliente: Cliente;

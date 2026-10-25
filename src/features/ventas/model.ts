@@ -151,6 +151,13 @@ export interface NuevaReserva {
   diasVigencia: number | null;
 }
 
+/** Reserva hecha por el propio cliente desde el portal: el backend usa su cliente. */
+export interface ReservaDelCliente {
+  vehiculoId: number;
+  montoAnticipo: number;
+  cotizacionId: number | null;
+}
+
 export interface FiltroVentas {
   clienteId?: number;
   vendedorId?: number;

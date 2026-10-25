@@ -28,6 +28,11 @@ export class FinanciamientosService {
     });
   }
 
+  /** RF-32: el estado de cuenta de cada financiamiento del cliente logueado. */
+  mios(): Observable<EstadoCuenta[]> {
+    return this.http.get<EstadoCuenta[]>(`${this.api}/financiamientos/mios`);
+  }
+
   estadoDeCuenta(id: number): Observable<EstadoCuenta> {
     return this.http.get<EstadoCuenta>(`${this.api}/financiamientos/${id}`);
   }

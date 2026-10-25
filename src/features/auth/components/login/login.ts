@@ -1,13 +1,15 @@
 import { Component, inject, input, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { Icono } from '../../../../shared/ui/icono/icono';
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { destinoDespuesDelLogin } from '../../logic';
 import { AuthService } from '../../services/auth.service';
+import { MarcoAuth } from '../marco-auth/marco-auth';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink, Icono, MarcoAuth],
   templateUrl: './login.html',
 })
 export class Login {
@@ -29,7 +31,6 @@ export class Login {
     (this.router.currentNavigation()?.extras.state?.['aviso'] as string | undefined) ?? null,
   );
   protected readonly verPassword = signal(false);
-  protected readonly anio = new Date().getFullYear();
 
   protected campoInvalido(campo: 'email' | 'password'): boolean {
     const control = this.form.controls[campo];

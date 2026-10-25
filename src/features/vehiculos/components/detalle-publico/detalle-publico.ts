@@ -11,13 +11,14 @@ import { valorDe } from '../../../../shared/utils/recurso';
 import { AuthService } from '../../../auth/services/auth.service';
 import { SimuladorPublico } from '../../../financiamiento/components/simulador-publico/simulador-publico';
 import { PlanesService } from '../../../financiamiento/services/planes.service';
+import { AccionesCliente } from '../../../ventas/components/acciones-cliente/acciones-cliente';
 import { ETIQUETA_CONDICION, ETIQUETA_ESTADO } from '../../logic';
 import { VehiculosService } from '../../services/vehiculos.service';
 
 /** Detalle de un vehículo en el sitio público (RF-13), con galería y simulador de cuotas. */
 @Component({
   selector: 'app-detalle-publico',
-  imports: [RouterLink, Icono, Etiqueta, SimuladorPublico],
+  imports: [RouterLink, Icono, Etiqueta, SimuladorPublico, AccionesCliente],
   templateUrl: './detalle-publico.html',
   host: {
     '(document:keydown.arrowleft)': 'anterior()',
@@ -31,6 +32,9 @@ export class DetallePublico {
   private readonly router = inject(Router);
 
   readonly id = input.required<string>();
+  /** ?cotizacion=: viene de "Reservar con este precio" en la cuenta del cliente. */
+  readonly cotizacion = input<string>();
+  protected readonly cotizacionId = computed(() => Number(this.cotizacion()) || null);
 
   protected readonly condicion = ETIQUETA_CONDICION;
   protected readonly estado = ETIQUETA_ESTADO;

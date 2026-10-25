@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, finalize, map, shareReplay, tap, throwError } from 'rxjs';
+import { Observable, finalize, map, shareReplay, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, Rol, Sesion, TokenResponse, Usuario } from '../model';
+import { LoginRequest, RegistroRequest, Rol, Sesion, TokenResponse, Usuario } from '../model';
 
 const CLAVE_SESION = 'concesionaria.sesion';
 
@@ -79,6 +79,23 @@ export class AuthService {
   /** RF-05. El backend cierra todas sus sesiones, así que después hay que volver a ingresar. */
   cambiarPassword(passwordActual: string, nuevaPassword: string): Observable<void> {
     return this.http.put<void>(`${this.url}/me/password`, { passwordActual, nuevaPassword });
+  }
+
+  /** RF-02: crea la cuenta del cliente y lo deja logueado. */
+  registrar(datos: RegistroRequest): Observable<void> {
+    return this.http
+      .post<Usuario>(`${this.url}/registro`, datos)
+      .pipe(switchMap(() => this.login({ email: datos.email, password: datos.password })));
+  }
+
+  /** RF-05: manda el email con el link. Responde igual exista o no la cuenta. */
+  recuperarPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${this.url}/recuperar-password`, { email });
+  }
+
+  /** RF-05: nueva contraseña con el token del link del email. */
+  restablecerPassword(token: string, nuevaPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.url}/restablecer-password`, { token, nuevaPassword });
   }
 
   tieneRol(...roles: Rol[]): boolean {

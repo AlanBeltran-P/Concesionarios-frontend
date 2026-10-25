@@ -1,0 +1,193 @@
+<div class="grid gap-6 lg:grid-cols-3 lg:items-start">
+  <!-- Cuenta -->
+  <section class="tarjeta flex flex-col gap-4 p-6" aria-labelledby="t-cuenta">
+    <h2 id="t-cuenta" class="text-h4">Tu cuenta</h2>
+    @if (perfil.cliente(); as c) {
+      <dl class="grid gap-3 text-sm">
+        <div class="flex flex-col gap-0.5">
+          <dt class="text-fg-muted">Nombre</dt>
+          <dd class="font-medium">{{ c.nombre }} {{ c.apellido }}</dd>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <dt class="text-fg-muted">Email</dt>
+          <dd class="break-all">{{ c.email }}</dd>
+        </div>
+      </dl>
+      @if (c.perfilCompleto) {
+        <p class="rounded-md bg-success-bg px-3 py-2 text-sm text-success">
+          Tus datos están completos: ya podés comprar.
+        </p>
+      } @else {
+        <p class="rounded-md bg-warning-bg px-3 py-2 text-sm text-warning">
+          Para comprar falta tu {{ perfil.faltantes().join(', ') }}.
+        </p>
+      }
+    } @else if (errorCarga(); as e) {
+      <p role="alert" class="text-sm text-danger">{{ e }}</p>
+    } @else {
+      <p class="text-sm text-fg-muted">Cargando…</p>
+    }
+  </section>
+
+  <form
+    [formGroup]="form"
+    (ngSubmit)="guardar()"
+    novalidate
+    class="tarjeta flex flex-col lg:col-span-2"
+    aria-labelledby="t-datos"
+  >
+    <section class="grid gap-5 p-6 sm:grid-cols-2">
+      <div class="flex flex-col gap-1 sm:col-span-2">
+        <h2 id="t-datos" class="text-h4">Datos personales</h2>
+        <p class="text-sm text-fg-muted">Los usamos para el boleto y la financiación.</p>
+      </div>
+
+      @if (error(); as mensaje) {
+        <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger sm:col-span-2">
+          {{ mensaje }}
+        </p>
+      }
+
+      <div class="flex flex-col gap-2">
+        <label for="documento" class="etiqueta">Documento</label>
+        <div class="flex gap-2">
+          <select formControlName="tipoDocumento" class="campo w-32 shrink-0" aria-label="Tipo de documento">
+            @for (t of tiposDocumento; track t.valor) {
+              <option [value]="t.valor">{{ t.texto }}</option>
+            }
+          </select>
+          <input
+            id="documento"
+            type="text"
+            formControlName="numeroDocumento"
+            inputmode="numeric"
+            class="campo min-w-0"
+            [class.campo-invalido]="errorDe('numeroDocumento')"
+            placeholder="30.123.456"
+          />
+        </div>
+        @if (errorDe('numeroDocumento'); as e) {
+          <p class="error-campo">{{ e }}</p>
+        }
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="telefono" class="etiqueta">Teléfono</label>
+        <input
+          id="telefono"
+          type="tel"
+          formControlName="telefono"
+          autocomplete="tel"
+          class="campo"
+          [class.campo-invalido]="errorDe('telefono')"
+          placeholder="11 5555-1234"
+        />
+        @if (errorDe('telefono'); as e) {
+          <p class="error-campo">{{ e }}</p>
+        }
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="nacimiento" class="etiqueta">
+          Fecha de nacimiento <span class="font-normal text-fg-muted">(opcional)</span>
+        </label>
+        <input
+          id="nacimiento"
+          type="date"
+          formControlName="fechaNacimiento"
+          class="campo"
+          [max]="hoy"
+          [class.campo-invalido]="errorDe('fechaNacimiento')"
+        />
+        @if (errorDe('fechaNacimiento'); as e) {
+          <p class="error-campo">{{ e }}</p>
+        }
+      </div>
+    </section>
+
+    <section formGroupName="direccion" class="grid gap-5 border-t border-line p-6 sm:grid-cols-6">
+      <h2 class="text-h4 sm:col-span-6">Dirección</h2>
+      <div class="flex flex-col gap-2 sm:col-span-3">
+        <label for="calle" class="etiqueta">Calle</label>
+        <input
+          id="calle"
+          type="text"
+          formControlName="calle"
+          autocomplete="address-line1"
+          class="campo"
+          [class.campo-invalido]="errorDe('direccion.calle')"
+        />
+        @if (errorDe('direccion.calle'); as e) {
+          <p class="error-campo">{{ e }}</p>
+        }
+      </div>
+      <div class="flex flex-col gap-2 sm:col-span-1">
+        <label for="numero" class="etiqueta">Número</label>
+        <input
+          id="numero"
+          type="text"
+          formControlName="numero"
+          class="campo"
+          [class.campo-invalido]="errorDe('direccion.numero')"
+        />
+        @if (errorDe('direccion.numero'); as e) {
+          <p class="error-campo">{{ e }}</p>
+        }
+      </div>
+      <div class="flex flex-col gap-2 sm:col-span-2">
+        <label for="piso" class="etiqueta">
+          Piso y depto. <span class="font-normal text-fg-muted">(opcional)</span>
+        </label>
+        <input id="piso" type="text" formControlName="pisoDepto" class="campo" />
+      </div>
+      <div class="flex flex-col gap-2 sm:col-span-2">
+        <label for="ciudad" class="etiqueta">Ciudad</label>
+        <input
+          id="ciudad"
+          type="text"
+          formControlName="ciudad"
+          autocomplete="address-level2"
+          class="campo"
+          [class.campo-invalido]="errorDe('direccion.ciudad')"
+        />
+        @if (errorDe('direccion.ciudad'); as e) {
+          <p class="error-campo">{{ e }}</p>
+        }
+      </div>
+      <div class="flex flex-col gap-2 sm:col-span-2">
+        <label for="provincia" class="etiqueta">Provincia</label>
+        <input
+          id="provincia"
+          type="text"
+          formControlName="provincia"
+          list="provincias"
+          class="campo"
+          [class.campo-invalido]="errorDe('direccion.provincia')"
+        />
+        <datalist id="provincias">
+          @for (p of provincias; track p) {
+            <option [value]="p"></option>
+          }
+        </datalist>
+        @if (errorDe('direccion.provincia'); as e) {
+          <p class="error-campo">{{ e }}</p>
+        }
+      </div>
+      <div class="flex flex-col gap-2 sm:col-span-2">
+        <label for="cp" class="etiqueta">
+          Código postal <span class="font-normal text-fg-muted">(opcional)</span>
+        </label>
+        <input id="cp" type="text" formControlName="codigoPostal" autocomplete="postal-code" class="campo" />
+      </div>
+    </section>
+
+    <div class="flex flex-wrap items-center justify-end gap-3 border-t border-line px-6 py-4">
+      @if (guardado()) {
+        <span role="status" class="text-sm text-success">Cambios guardados.</span>
+      }
+      <button type="submit" class="boton boton-primario" [disabled]="guardando() || !perfil.cliente()">
+        {{ guardando() ? 'Guardando…' : 'Guardar cambios' }}
+      </button>
+    </div>
+  </form>
+
+  <app-cambiar-password class="lg:col-span-2 lg:col-start-2" />
+</div>
