@@ -4,5 +4,5 @@
   "installCommand": "npm ci",
   "buildCommand": "npx ng build --configuration demo",
   "outputDirectory": "dist/concesionarios-frontend/browser",
-  "rewrites": [{ "source": "/((?!.*\.).*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
