@@ -5,6 +5,25 @@
       <p class="text-fg-secondary">Ingresá con tu cuenta para continuar.</p>
     </header>
 
+    @if (cuentasDemo.length) {
+      <section class="flex flex-col gap-2 rounded-md border border-line-strong px-4 py-3.5 text-sm">
+        <p class="font-medium">Versión demo: entrá con una cuenta de ejemplo</p>
+        <div class="flex flex-wrap gap-2">
+          @for (cuenta of cuentasDemo; track cuenta.email) {
+            <button
+              type="button"
+              [disabled]="cargando()"
+              (click)="usarCuenta(cuenta.email, cuenta.password)"
+              class="boton boton-secundario h-9 px-3 text-sm"
+            >
+              {{ cuenta.rol }}
+            </button>
+          }
+        </div>
+        <p class="text-xs text-fg-muted">Los datos son de ejemplo y se guardan solo en tu navegador.</p>
+      </section>
+    }
+
     @if (aviso(); as mensaje) {
       <div role="status" class="rounded-md bg-success-bg px-4 py-3 text-sm text-success">
         {{ mensaje }}

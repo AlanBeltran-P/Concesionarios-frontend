@@ -80,6 +80,29 @@ También crea dos vendedores (`vera.gomez@concesionaria.com` / `Vendedor12345`) 
 compras y cotizaciones (`cliente.demo@mail.com` / `Cliente12345`). El detalle está en el
 [README del backend](https://github.com/AlanBeltran-P/Sistema-de-Gestion-para-Concesionarios#datos-de-ejemplo).
 
+### Versión demo (sin backend)
+
+Para mostrar el sistema sin levantar los microservicios hay una versión demo: `src/demo` responde
+todos los pedidos a `/api` desde el navegador, con datos de ejemplo (vehículos con fotos, clientes,
+ventas, financiaciones con cuotas y mora, reservas, cotizaciones y comisiones). Se puede crear,
+vender, cobrar, reservar, etc.; los cambios quedan guardados en el `localStorage` de cada navegador.
+Las respuestas tardan entre 0,7 y 2 segundos, como el backend real, así se ven las pantallas de carga.
+
+```bash
+npm run start:demo   # en http://localhost:4200
+npm run build:demo   # deja el sitio estático en dist/concesionarios-frontend/browser
+```
+
+El login muestra botones para entrar como administrador, vendedor o cliente. Para volver a los
+datos originales, borrar el `localStorage` del sitio (o subir `VERSION_DATOS` en
+`src/demo/datos-iniciales.ts`).
+
+**Deploy en Vercel:** importar este repo; `vercel.json` ya indica el build (`ng build
+--configuration demo`), la carpeta de salida y la redirección de las rutas a `index.html`.
+
+El build normal (`npm run build`, Docker) no incluye nada de la demo: el interceptor entra por
+reemplazo de archivo (`src/app/interceptores.demo.ts`, ver `angular.json`).
+
 ## Quién ve qué
 
 | Rol | Dónde trabaja | Qué puede hacer |

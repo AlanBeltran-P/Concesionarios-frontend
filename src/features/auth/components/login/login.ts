@@ -1,6 +1,7 @@
 import { Component, inject, input, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 import { Icono } from '../../../../shared/ui/icono/icono';
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { destinoDespuesDelLogin } from '../../logic';
@@ -31,6 +32,13 @@ export class Login {
     (this.router.currentNavigation()?.extras.state?.['aviso'] as string | undefined) ?? null,
   );
   protected readonly verPassword = signal(false);
+  /** Solo en la versión demo: las cuentas de ejemplo para entrar con un clic. */
+  protected readonly cuentasDemo = environment.cuentasDemo;
+
+  protected usarCuenta(email: string, password: string): void {
+    this.form.setValue({ email, password });
+    this.ingresar();
+  }
 
   protected campoInvalido(campo: 'email' | 'password'): boolean {
     const control = this.form.controls[campo];
