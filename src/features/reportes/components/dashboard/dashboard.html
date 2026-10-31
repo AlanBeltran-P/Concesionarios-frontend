@@ -39,7 +39,7 @@
       </button>
     </div>
   } @else if (cargando()) {
-    <p class="py-14 text-center text-fg-muted">Cargando indicadores…</p>
+    <app-esqueleto-ficha texto="Cargando indicadores…" [titulo]="false" />
   } @else if (datos(); as d) {
     <!-- Indicadores -->
     <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Indicadores">

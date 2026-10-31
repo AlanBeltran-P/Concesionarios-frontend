@@ -10,11 +10,12 @@ import { valorDe } from '../../../../shared/utils/recurso';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ESTADO_VENTA, FORMA_PAGO } from '../../logic';
 import { VentasService } from '../../services/ventas.service';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 /** Ficha de una venta (/panel/ventas/:id): montos, comprobante PDF y anulación. */
 @Component({
   selector: 'app-ficha-venta',
-  imports: [RouterLink, Icono, Etiqueta],
+  imports: [EsqueletoFicha, RouterLink, Icono, Etiqueta],
   templateUrl: './ficha-venta.html',
 })
 export class FichaVenta {

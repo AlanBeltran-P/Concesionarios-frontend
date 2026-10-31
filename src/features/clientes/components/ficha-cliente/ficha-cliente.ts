@@ -25,6 +25,7 @@ import {
 import { Cliente, ClienteRequest, TipoDocumento } from '../../model';
 import { ClientesService } from '../../services/clientes.service';
 import { HistorialClienteComponent } from '../historial-cliente/historial-cliente';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 /** El documento se valida según su tipo (DNI, CUIT con dígito verificador, etc.). */
 function documentoValido(grupo: AbstractControl): ValidationErrors | null {
@@ -68,7 +69,14 @@ type Campo =
 /** Alta (/panel/clientes/nuevo) y ficha de un cliente (/panel/clientes/:id) con su historial. */
 @Component({
   selector: 'app-ficha-cliente',
-  imports: [ReactiveFormsModule, RouterLink, Icono, Etiqueta, HistorialClienteComponent],
+  imports: [
+    EsqueletoFicha,
+    ReactiveFormsModule,
+    RouterLink,
+    Icono,
+    Etiqueta,
+    HistorialClienteComponent,
+  ],
   templateUrl: './ficha-cliente.html',
 })
 export class FichaCliente {

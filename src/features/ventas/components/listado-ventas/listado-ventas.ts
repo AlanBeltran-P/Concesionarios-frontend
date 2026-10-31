@@ -11,6 +11,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { ESTADO_RESERVA, ESTADO_VENTA, FORMA_PAGO } from '../../logic';
 import { EstadoReserva, EstadoVenta } from '../../model';
 import { VentasService } from '../../services/ventas.service';
+import { EsqueletoFilas } from '../../../../shared/ui/carga/esqueleto-filas';
 
 type Vista = 'ventas' | 'reservas';
 const POR_PAGINA = 20;
@@ -18,7 +19,7 @@ const POR_PAGINA = 20;
 /** Ventas y reservas (/panel/ventas?vista=reservas). */
 @Component({
   selector: 'app-listado-ventas',
-  imports: [RouterLink, Icono, Etiqueta, Paginado],
+  imports: [EsqueletoFilas, RouterLink, Icono, Etiqueta, Paginado],
   templateUrl: './listado-ventas.html',
 })
 export class ListadoVentas {

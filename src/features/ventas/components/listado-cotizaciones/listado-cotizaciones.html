@@ -110,11 +110,13 @@
               </td>
             </tr>
           } @empty {
-            <tr>
-              <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
-                {{ cargando() ? 'Cargando cotizaciones…' : textoVacio() }}
-              </td>
-            </tr>
+            @if (cargando()) {
+              <app-esqueleto-filas [columnas]="5" />
+            } @else {
+              <tr>
+                <td colspan="5" class="px-5 py-14 text-center text-fg-muted">{{ textoVacio() }}</td>
+              </tr>
+            }
           }
         </tbody>
       </table>

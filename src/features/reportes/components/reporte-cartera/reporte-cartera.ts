@@ -5,11 +5,12 @@ import { formatearFecha, formatearPrecio } from '../../../../shared/utils/format
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
 import { ReportesService } from '../../services/reportes.service';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 /** Cartera de créditos y morosos (RF-41). */
 @Component({
   selector: 'app-reporte-cartera',
-  imports: [RouterLink],
+  imports: [EsqueletoFicha, RouterLink],
   template: `
     @if (error(); as mensaje) {
       <p role="alert" class="rounded-md bg-danger-bg px-4 py-3 text-sm text-danger">
@@ -91,7 +92,7 @@ import { ReportesService } from '../../services/reportes.service';
         </section>
       </div>
     } @else {
-      <p class="py-14 text-center text-fg-muted">Cargando reporte…</p>
+      <app-esqueleto-ficha texto="Cargando reporte…" [titulo]="false" />
     }
   `,
 })

@@ -14,6 +14,7 @@ import { PATRON_TELEFONO, PROVINCIAS, TIPOS_DOCUMENTO, errorDeDocumento } from '
 import { Cliente, PerfilRequest, TipoDocumento } from '../../model';
 import { ClientesService } from '../../services/clientes.service';
 import { PerfilActual } from '../cuenta-cliente/perfil-actual';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 
 function documentoValido(grupo: AbstractControl): ValidationErrors | null {
   const tipo = grupo.get('tipoDocumento')?.value as TipoDocumento;
@@ -43,7 +44,7 @@ type Campo =
 /** Mis datos (/cuenta/datos): el cliente completa su perfil (RF-15) y cambia su contraseña. */
 @Component({
   selector: 'app-mi-perfil',
-  imports: [ReactiveFormsModule, CambiarPassword],
+  imports: [EsqueletoLineas, ReactiveFormsModule, CambiarPassword],
   templateUrl: './mi-perfil.html',
 })
 export class MiPerfil {

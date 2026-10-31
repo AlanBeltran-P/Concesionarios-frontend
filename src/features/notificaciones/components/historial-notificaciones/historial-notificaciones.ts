@@ -10,11 +10,12 @@ import { valorDe } from '../../../../shared/utils/recurso';
 import { ESTADO_NOTIFICACION, TIPO_NOTIFICACION } from '../../logic';
 import { EstadoNotificacion, TipoNotificacion } from '../../model';
 import { NotificacionesService } from '../../services/notificaciones.service';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 
 /** Historial de emails (RF-38): qué se mandó, a quién, si falló, y reenvío. Solo ADMIN. */
 @Component({
   selector: 'app-historial-notificaciones',
-  imports: [Etiqueta, Icono, Paginado],
+  imports: [EsqueletoLineas, Etiqueta, Icono, Paginado],
   templateUrl: './historial-notificaciones.html',
 })
 export class HistorialNotificaciones {

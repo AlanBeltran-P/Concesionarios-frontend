@@ -10,6 +10,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { ESTADO_COTIZACION } from '../../logic';
 import { EstadoCotizacion, FiltroCotizaciones } from '../../model';
 import { CotizacionesService } from '../../services/cotizaciones.service';
+import { EsqueletoFilas } from '../../../../shared/ui/carga/esqueleto-filas';
 
 type Vista = 'pendientes' | 'mias' | 'todas';
 
@@ -24,7 +25,7 @@ const POR_PAGINA = 20;
 /** Cotizaciones: las pedidas en el portal sin atender, las propias y todas. */
 @Component({
   selector: 'app-listado-cotizaciones',
-  imports: [RouterLink, Icono, Etiqueta],
+  imports: [EsqueletoFilas, RouterLink, Icono, Etiqueta],
   templateUrl: './listado-cotizaciones.html',
 })
 export class ListadoCotizaciones {

@@ -13,7 +13,7 @@
       <a routerLink="/panel/clientes" class="boton boton-secundario">Volver a clientes</a>
     </div>
   } @else if (!esNuevo() && !actual()) {
-    <p class="py-14 text-center text-fg-muted">Cargando cliente…</p>
+    <app-esqueleto-ficha texto="Cargando cliente…" [tarjetas]="0" />
   } @else {
     <header class="flex flex-wrap items-center gap-3">
       @if (actual(); as c) {

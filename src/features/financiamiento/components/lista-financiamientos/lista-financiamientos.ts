@@ -9,11 +9,12 @@ import { valorDe } from '../../../../shared/utils/recurso';
 import { ESTADO_FINANCIAMIENTO } from '../../logic';
 import { EstadoFinanciamiento } from '../../model';
 import { FinanciamientosService } from '../../services/financiamientos.service';
+import { EsqueletoFilas } from '../../../../shared/ui/carga/esqueleto-filas';
 
 /** Financiamientos de todos los clientes, filtrables por estado. */
 @Component({
   selector: 'app-lista-financiamientos',
-  imports: [RouterLink, Etiqueta, Paginado],
+  imports: [EsqueletoFilas, RouterLink, Etiqueta, Paginado],
   template: `
     <div class="flex flex-col gap-4">
       <label class="w-full sm:w-56">
@@ -89,11 +90,15 @@ import { FinanciamientosService } from '../../services/financiamientos.service';
                   </td>
                 </tr>
               } @empty {
-                <tr>
-                  <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
-                    {{ cargando() ? 'Cargando…' : 'No hay financiamientos con ese filtro.' }}
-                  </td>
-                </tr>
+                @if (cargando()) {
+                  <app-esqueleto-filas [columnas]="5" />
+                } @else {
+                  <tr>
+                    <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
+                      {{ 'No hay financiamientos con ese filtro.' }}
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>

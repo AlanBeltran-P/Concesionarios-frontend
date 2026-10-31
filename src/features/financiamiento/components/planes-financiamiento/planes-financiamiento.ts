@@ -7,6 +7,7 @@ import { AuthService } from '../../../auth/services/auth.service';
 import { leerPlazos } from '../../logic';
 import { Plan, PlanRequest } from '../../model';
 import { PlanesService } from '../../services/planes.service';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 
 interface Borrador {
   nombre: string;
@@ -29,7 +30,7 @@ const VACIO: Borrador = {
 /** Planes de financiación (RF-28). Los edita el ADMIN; los vendedores los consultan. */
 @Component({
   selector: 'app-planes-financiamiento',
-  imports: [Etiqueta],
+  imports: [EsqueletoLineas, Etiqueta],
   templateUrl: './planes-financiamiento.html',
 })
 export class PlanesFinanciamiento {

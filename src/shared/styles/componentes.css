@@ -48,4 +48,45 @@
   .oculto-en-celular {
     @apply max-sm:invisible;
   }
+
+  /* Bloque gris con un brillo que pasa: ocupa el lugar del contenido mientras carga. */
+  .esqueleto {
+    @apply rounded-sm bg-muted;
+    background-image: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.6), transparent);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: esqueleto-brillo 1.4s ease-in-out infinite;
+  }
+
+  /* El tramo que se mueve en la barra de carga de arriba (shared/ui/carga/barra-carga). */
+  .barra-carga {
+    animation: barra-carga-avance 1.1s ease-in-out infinite;
+  }
+}
+
+@keyframes esqueleto-brillo {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+@keyframes barra-carga-avance {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto {
+    animation: none;
+  }
+  .barra-carga {
+    animation-duration: 3s;
+  }
 }

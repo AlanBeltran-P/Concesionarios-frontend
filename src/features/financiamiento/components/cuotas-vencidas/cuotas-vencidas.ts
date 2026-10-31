@@ -7,11 +7,12 @@ import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
 import { AuthService } from '../../../auth/services/auth.service';
 import { FinanciamientosService } from '../../services/financiamientos.service';
+import { EsqueletoFilas } from '../../../../shared/ui/carga/esqueleto-filas';
 
 /** Cuotas vencidas sin pagar (mora, RF-33). El ADMIN puede correr el proceso de vencimientos. */
 @Component({
   selector: 'app-cuotas-vencidas',
-  imports: [RouterLink, Paginado],
+  imports: [EsqueletoFilas, RouterLink, Paginado],
   template: `
     <div class="flex flex-col gap-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -90,11 +91,15 @@ import { FinanciamientosService } from '../../services/financiamientos.service';
                 </td>
               </tr>
             } @empty {
-              <tr>
-                <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
-                  {{ cargando() ? 'Cargando…' : 'No hay cuotas vencidas. Todos al día.' }}
-                </td>
-              </tr>
+              @if (cargando()) {
+                <app-esqueleto-filas [columnas]="5" />
+              } @else {
+                <tr>
+                  <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
+                    {{ 'No hay cuotas vencidas. Todos al día.' }}
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>

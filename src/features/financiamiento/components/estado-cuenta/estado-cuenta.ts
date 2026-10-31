@@ -10,6 +10,7 @@ import { valorDe } from '../../../../shared/utils/recurso';
 import { ESTADO_CUOTA, ESTADO_FINANCIAMIENTO, MEDIO_PAGO, TIPO_PAGO } from '../../logic';
 import { MedioPago, TipoPago } from '../../model';
 import { FinanciamientosService } from '../../services/financiamientos.service';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 /**
  * Estado de cuenta de un financiamiento (RF-32) y registro de pagos (RF-31).
@@ -17,7 +18,7 @@ import { FinanciamientosService } from '../../services/financiamientos.service';
  */
 @Component({
   selector: 'app-estado-cuenta',
-  imports: [RouterLink, Icono, Etiqueta],
+  imports: [EsqueletoFicha, RouterLink, Icono, Etiqueta],
   templateUrl: './estado-cuenta.html',
 })
 export class EstadoCuentaComponent {

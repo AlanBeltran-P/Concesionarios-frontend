@@ -51,7 +51,7 @@
     @if (errorCarga(); as mensaje) {
       <p class="px-5 py-10 text-center text-sm text-danger">{{ mensaje }}</p>
     } @else if (cargando()) {
-      <p class="px-5 py-10 text-center text-sm text-fg-muted">Cargando…</p>
+      <div class="px-5 py-6"><app-esqueleto-lineas [lineas]="5" /></div>
     } @else {
       <ul class="divide-y divide-line">
         @for (item of lista(); track item.id) {

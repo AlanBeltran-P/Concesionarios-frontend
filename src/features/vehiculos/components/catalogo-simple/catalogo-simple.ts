@@ -5,6 +5,7 @@ import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
 import { Categoria, Marca } from '../../model';
 import { VehiculosService } from '../../services/vehiculos.service';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 
 type Item = Marca & Partial<Pick<Categoria, 'descripcion'>>;
 
@@ -26,6 +27,7 @@ const TEXTOS = {
 /** Lista editable de marcas o de categorías: alta, edición en la misma fila y activar/desactivar. */
 @Component({
   selector: 'app-catalogo-simple',
+  imports: [EsqueletoLineas],
   templateUrl: './catalogo-simple.html',
 })
 export class CatalogoSimple {

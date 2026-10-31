@@ -26,6 +26,7 @@ import {
 import { Cotizacion, Reserva } from '../../model';
 import { CotizacionesService } from '../../services/cotizaciones.service';
 import { VentasService } from '../../services/ventas.service';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 /**
  * Alta de una reserva con seña (/panel/ventas/reservas/nueva) y su ficha (/panel/ventas/reservas/:id).
@@ -33,7 +34,7 @@ import { VentasService } from '../../services/ventas.service';
  */
 @Component({
   selector: 'app-ficha-reserva',
-  imports: [RouterLink, Icono, Etiqueta, Buscador],
+  imports: [EsqueletoFicha, RouterLink, Icono, Etiqueta, Buscador],
   templateUrl: './ficha-reserva.html',
 })
 export class FichaReserva {

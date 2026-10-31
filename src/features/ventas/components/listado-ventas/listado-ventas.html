@@ -155,11 +155,15 @@
               </td>
             </tr>
           } @empty {
-            <tr>
-              <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
-                {{ cargando() ? 'Cargando ventas…' : 'No hay ventas con esos filtros.' }}
-              </td>
-            </tr>
+            @if (cargando()) {
+              <app-esqueleto-filas [columnas]="5" />
+            } @else {
+              <tr>
+                <td colspan="5" class="px-5 py-14 text-center text-fg-muted">
+                  {{ 'No hay ventas con esos filtros.' }}
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
@@ -213,11 +217,15 @@
               </td>
             </tr>
           } @empty {
-            <tr>
-              <td colspan="4" class="px-5 py-14 text-center text-fg-muted">
-                {{ cargando() ? 'Cargando reservas…' : 'No hay reservas con ese filtro.' }}
-              </td>
-            </tr>
+            @if (cargando()) {
+              <app-esqueleto-filas [columnas]="4" />
+            } @else {
+              <tr>
+                <td colspan="4" class="px-5 py-14 text-center text-fg-muted">
+                  {{ 'No hay reservas con ese filtro.' }}
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>

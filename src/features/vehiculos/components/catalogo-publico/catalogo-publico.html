@@ -145,7 +145,9 @@
       <div class="flex flex-col gap-1">
         <h2 class="text-h2">Vehículos disponibles</h2>
         <p class="text-sm text-fg-muted">
-          @if (datos()?.page; as p) {
+          @if (cargando()) {
+            <app-actualizando texto="Buscando vehículos…" />
+          } @else if (datos()?.page; as p) {
             {{ p.totalElements }} {{ p.totalElements === 1 ? 'resultado' : 'resultados' }}
           }
         </p>
@@ -171,10 +173,12 @@
         @for (v of datos()?.content ?? []; track v.id) {
           <li><app-tarjeta-vehiculo [v]="v" /></li>
         } @empty {
-          <li class="tarjeta col-span-full flex flex-col items-center gap-3 px-6 py-16 text-center">
-            @if (cargando()) {
-              <span class="text-fg-muted">Cargando vehículos…</span>
-            } @else {
+          @if (cargando()) {
+            @for (i of esqueletos; track i) {
+              <li><app-tarjeta-esqueleto /></li>
+            }
+          } @else {
+            <li class="tarjeta col-span-full flex flex-col items-center gap-3 px-6 py-16 text-center">
               <span class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted">
                 <app-icono nombre="auto" class="size-6" />
               </span>
@@ -184,8 +188,8 @@
                   Ver todos
                 </button>
               }
-            }
-          </li>
+            </li>
+          }
         }
       </ul>
 

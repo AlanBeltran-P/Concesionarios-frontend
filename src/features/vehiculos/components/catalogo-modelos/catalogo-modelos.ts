@@ -5,6 +5,7 @@ import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
 import { Categoria, Marca, Modelo } from '../../model';
 import { VehiculosService } from '../../services/vehiculos.service';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 
 const porNombre = (a: { nombre: string }, b: { nombre: string }) =>
   a.nombre.localeCompare(b.nombre, 'es');
@@ -12,6 +13,7 @@ const porNombre = (a: { nombre: string }, b: { nombre: string }) =>
 /** Lista editable de modelos. Cada modelo pertenece a una marca y a una categoría. */
 @Component({
   selector: 'app-catalogo-modelos',
+  imports: [EsqueletoLineas],
   templateUrl: './catalogo-modelos.html',
 })
 export class CatalogoModelos {

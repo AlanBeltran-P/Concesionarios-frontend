@@ -14,7 +14,7 @@
       <a routerLink="/panel/ventas" class="boton boton-secundario">Volver a ventas</a>
     </div>
   } @else if (!esNueva() && !reserva()) {
-    <p class="py-14 text-center text-fg-muted">Cargando reserva…</p>
+    <app-esqueleto-ficha texto="Cargando reserva…" [tarjetas]="0" />
   } @else {
     <header class="flex flex-wrap items-center gap-3">
       @if (reserva(); as r) {

@@ -8,13 +8,14 @@ import { valorDe } from '../../../../shared/utils/recurso';
 import { formatearDocumento, nombreCompleto } from '../../logic';
 import { FiltroClientes, OrigenCliente } from '../../model';
 import { ClientesService } from '../../services/clientes.service';
+import { EsqueletoFilas } from '../../../../shared/ui/carga/esqueleto-filas';
 
 const POR_PAGINA = 20;
 
 /** Clientes de la concesionaria: búsqueda y paginado. */
 @Component({
   selector: 'app-listado-clientes',
-  imports: [RouterLink, Icono, Etiqueta],
+  imports: [EsqueletoFilas, RouterLink, Icono, Etiqueta],
   templateUrl: './listado-clientes.html',
 })
 export class ListadoClientes {

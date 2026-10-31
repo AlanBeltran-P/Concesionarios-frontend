@@ -14,11 +14,12 @@ import {
   precioCompacto,
 } from '../../logic';
 import { ReportesService } from '../../services/reportes.service';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 /** Dashboard del ADMIN (RF-42): indicadores, ventas por mes y rankings. */
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, GraficoColumnas],
+  imports: [EsqueletoFicha, RouterLink, GraficoColumnas],
   templateUrl: './dashboard.html',
 })
 export class DashboardComponent {

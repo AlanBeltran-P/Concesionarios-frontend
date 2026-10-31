@@ -13,7 +13,7 @@
       <a routerLink="/panel/cotizaciones" class="boton boton-secundario">Volver a cotizaciones</a>
     </div>
   } @else if (!esNueva() && !cotizacion()) {
-    <p class="py-14 text-center text-fg-muted">Cargando cotización…</p>
+    <app-esqueleto-ficha texto="Cargando cotización…" [tarjetas]="0" />
   } @else {
     <header class="flex flex-wrap items-center gap-3">
       @if (cotizacion(); as c) {

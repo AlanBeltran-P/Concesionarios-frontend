@@ -25,7 +25,7 @@
     } @else if (errorCarga(); as e) {
       <p role="alert" class="text-sm text-danger">{{ e }}</p>
     } @else {
-      <p class="text-sm text-fg-muted">Cargando…</p>
+      <app-esqueleto-lineas [lineas]="3" />
     }
   </section>
 

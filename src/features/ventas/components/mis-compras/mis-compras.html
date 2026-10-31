@@ -151,16 +151,20 @@
       }
     </article>
   } @empty {
-    <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
-      @if (cargando()) {
-        <span class="text-fg-muted">Cargando tus compras…</span>
-      } @else if (!error()) {
-        <span class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted">
-          <app-icono nombre="auto" class="size-6" />
-        </span>
-        <p class="font-medium">Todavía no compraste ningún vehículo</p>
-        <a routerLink="/" class="boton boton-primario">Ver el catálogo</a>
+    @if (cargando()) {
+      @for (i of [0, 1]; track i) {
+        <div class="tarjeta p-6"><app-esqueleto-lineas [lineas]="4" /></div>
       }
-    </div>
+    } @else {
+      <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
+        @if (!error()) {
+          <span class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted">
+            <app-icono nombre="auto" class="size-6" />
+          </span>
+          <p class="font-medium">Todavía no compraste ningún vehículo</p>
+          <a routerLink="/" class="boton boton-primario">Ver el catálogo</a>
+        }
+      </div>
+    }
   }
 </section>

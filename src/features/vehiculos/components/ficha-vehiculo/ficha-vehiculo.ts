@@ -22,6 +22,7 @@ import { CondicionVehiculo, EstadoVehiculo, Vehiculo, VehiculoRequest } from '..
 import { VehiculosService } from '../../services/vehiculos.service';
 import { EstadoBadge } from '../estado-badge/estado-badge';
 import { FotosVehiculo } from '../fotos-vehiculo/fotos-vehiculo';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 type Campo =
   'marcaId' | 'modeloId' | 'anio' | 'color' | 'kilometraje' | 'precio' | 'vin' | 'descripcion';
@@ -35,7 +36,7 @@ const ACCION_ESTADO: Record<EstadoVehiculo, string> = {
 /** Alta (/panel/vehiculos/nuevo) y ficha de un vehículo (/panel/vehiculos/:id). */
 @Component({
   selector: 'app-ficha-vehiculo',
-  imports: [ReactiveFormsModule, RouterLink, Icono, EstadoBadge, FotosVehiculo],
+  imports: [EsqueletoFicha, ReactiveFormsModule, RouterLink, Icono, EstadoBadge, FotosVehiculo],
   templateUrl: './ficha-vehiculo.html',
 })
 export class FichaVehiculo {

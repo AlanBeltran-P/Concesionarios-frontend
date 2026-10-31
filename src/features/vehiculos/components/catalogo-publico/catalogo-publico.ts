@@ -2,6 +2,7 @@ import { Component, computed, inject, input, linkedSignal } from '@angular/core'
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
+import { Actualizando } from '../../../../shared/ui/carga/actualizando';
 import { Icono } from '../../../../shared/ui/icono/icono';
 import { formatearPrecio } from '../../../../shared/utils/formato';
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
@@ -9,6 +10,7 @@ import { valorDe } from '../../../../shared/utils/recurso';
 import { OPCIONES_ORDEN } from '../../logic';
 import { CondicionVehiculo, FiltroVehiculos, OrdenVehiculos } from '../../model';
 import { VehiculosService } from '../../services/vehiculos.service';
+import { TarjetaEsqueleto } from '../tarjeta-vehiculo/tarjeta-esqueleto';
 import { TarjetaVehiculo } from '../tarjeta-vehiculo/tarjeta-vehiculo';
 
 const POR_PAGINA = 12;
@@ -22,7 +24,7 @@ export const PRECIOS_MAXIMOS = [15_000_000, 25_000_000, 40_000_000, 60_000_000];
  */
 @Component({
   selector: 'app-catalogo-publico',
-  imports: [Icono, TarjetaVehiculo],
+  imports: [TarjetaEsqueleto, Actualizando, Icono, TarjetaVehiculo],
   templateUrl: './catalogo-publico.html',
 })
 export class CatalogoPublico {
@@ -74,6 +76,8 @@ export class CatalogoPublico {
   });
   protected readonly datos = computed(() => valorDe(this.resultado));
   protected readonly cargando = computed(() => this.resultado.isLoading());
+  /** Tarjetas grises que ocupan el lugar de los resultados mientras cargan. */
+  protected readonly esqueletos = [0, 1, 2, 3, 4, 5];
   protected readonly error = computed(() => {
     const e = this.resultado.error();
     return e ? mensajeDeError(e) : null;

@@ -6,7 +6,7 @@
   @if (errorCarga(); as mensaje) {
     <p class="text-sm text-danger">{{ mensaje }}</p>
   } @else if (cargando()) {
-    <p class="text-sm text-fg-muted">Cargando tasaciones…</p>
+    <app-esqueleto-lineas [lineas]="2" texto="Cargando tasaciones…" />
   } @else {
     <ul class="flex flex-col gap-2">
       <li>

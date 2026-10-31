@@ -11,6 +11,7 @@ import { VehiculosService } from '../../../vehiculos/services/vehiculos.service'
 import { DIAS_VALIDEZ_TASACION, ESTADO_TASACION, tasacionUtilizable } from '../../logic';
 import { Tasacion } from '../../model';
 import { CotizacionesService } from '../../services/cotizaciones.service';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 
 /**
  * Autos usados que el cliente ofrece como parte de pago (RF-20): sus tasaciones, cuál se usa,
@@ -18,7 +19,7 @@ import { CotizacionesService } from '../../services/cotizaciones.service';
  */
 @Component({
   selector: 'app-tasaciones-cliente',
-  imports: [ReactiveFormsModule, Etiqueta],
+  imports: [EsqueletoLineas, ReactiveFormsModule, Etiqueta],
   templateUrl: './tasaciones-cliente.html',
 })
 export class TasacionesCliente {

@@ -190,8 +190,8 @@
     </div>
   } @else if (cargando()) {
     <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_460px]" aria-busy="true">
-      <div class="aspect-[16/10] animate-pulse rounded-xl bg-subtle"></div>
-      <div class="h-96 animate-pulse rounded-lg bg-subtle"></div>
+      <div class="esqueleto aspect-[16/10] rounded-xl" aria-hidden="true"></div>
+      <div class="esqueleto h-96 rounded-lg" aria-hidden="true"></div>
       <span class="sr-only">Cargando vehículo…</span>
     </div>
   }

@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 import { Icono } from '../../../../shared/ui/icono/icono';
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
@@ -10,7 +11,7 @@ import { SimuladorPublico } from '../simulador-publico/simulador-publico';
 /** Página "Financiación" del sitio público: los planes vigentes y un simulador con precio libre. */
 @Component({
   selector: 'app-financiacion-publica',
-  imports: [RouterLink, Icono, SimuladorPublico],
+  imports: [EsqueletoLineas, RouterLink, Icono, SimuladorPublico],
   template: `
     <section class="bg-inverse text-fg-inverse">
       <div class="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pt-14 pb-12 sm:px-8">
@@ -61,9 +62,17 @@ import { SimuladorPublico } from '../simulador-publico/simulador-publico';
                 </div>
               </li>
             } @empty {
-              <li class="tarjeta col-span-full px-6 py-12 text-center text-fg-muted">
-                {{ cargando() ? 'Cargando planes…' : 'Por ahora no hay planes de financiación.' }}
-              </li>
+              @if (cargando()) {
+                @for (i of [0, 1]; track i) {
+                  <li class="tarjeta p-6">
+                    <app-esqueleto-lineas [lineas]="5" texto="Cargando planes…" />
+                  </li>
+                }
+              } @else {
+                <li class="tarjeta col-span-full px-6 py-12 text-center text-fg-muted">
+                  Por ahora no hay planes de financiación.
+                </li>
+              }
             }
           </ul>
         }

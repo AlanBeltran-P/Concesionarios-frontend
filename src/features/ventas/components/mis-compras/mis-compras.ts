@@ -12,11 +12,12 @@ import { FinanciamientosService } from '../../../financiamiento/services/financi
 import { ESTADO_VENTA, FORMA_PAGO } from '../../logic';
 import { Venta } from '../../model';
 import { VentasService } from '../../services/ventas.service';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 
 /** Mis compras (/cuenta): cada compra con su comprobante y, si es financiada, sus cuotas (RF-32). */
 @Component({
   selector: 'app-mis-compras',
-  imports: [RouterLink, Etiqueta, Icono],
+  imports: [EsqueletoLineas, RouterLink, Etiqueta, Icono],
   templateUrl: './mis-compras.html',
 })
 export class MisCompras {

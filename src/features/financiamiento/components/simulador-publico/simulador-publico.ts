@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 import { formatearPrecio } from '../../../../shared/utils/formato';
 import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
@@ -11,6 +12,7 @@ import { PlanesService } from '../../services/planes.service';
  */
 @Component({
   selector: 'app-simulador-publico',
+  imports: [EsqueletoLineas],
   template: `
     <section class="tarjeta flex flex-col gap-5 p-6" aria-labelledby="titulo-simulador">
       <div class="flex flex-col gap-1">
@@ -19,9 +21,11 @@ import { PlanesService } from '../../services/planes.service';
       </div>
 
       @if (!planes().length) {
-        <p class="text-sm text-fg-muted">
-          {{ cargandoPlanes() ? 'Cargando planes…' : 'Por ahora no hay planes de financiación.' }}
-        </p>
+        @if (cargandoPlanes()) {
+          <app-esqueleto-lineas [lineas]="4" texto="Cargando planes…" />
+        } @else {
+          <p class="text-sm text-fg-muted">Por ahora no hay planes de financiación.</p>
+        }
       } @else {
         @if (precio() === null) {
           <label class="flex flex-col gap-1.5">

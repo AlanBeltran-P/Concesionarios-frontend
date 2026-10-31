@@ -7,11 +7,12 @@ import { mensajeDeError } from '../../../../shared/utils/mensaje-error';
 import { valorDe } from '../../../../shared/utils/recurso';
 import { ATAJOS_PERIODO, AtajoPeriodo, NOMBRE_GRUPO, periodoDe, precioCompacto } from '../../logic';
 import { ReportesService } from '../../services/reportes.service';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 /** Reporte de ventas por período y vendedor (RF-39). */
 @Component({
   selector: 'app-reporte-ventas',
-  imports: [RouterLink],
+  imports: [EsqueletoFicha, RouterLink],
   template: `
     <div class="flex flex-col gap-6">
       <nav class="flex w-fit gap-1 rounded-md bg-subtle p-1" aria-label="Período">
@@ -164,7 +165,7 @@ import { ReportesService } from '../../services/reportes.service';
           </div>
         </section>
       } @else {
-        <p class="py-14 text-center text-fg-muted">Cargando reporte…</p>
+        <app-esqueleto-ficha texto="Cargando reporte…" [titulo]="false" [tarjetas]="0" />
       }
     </div>
   `,

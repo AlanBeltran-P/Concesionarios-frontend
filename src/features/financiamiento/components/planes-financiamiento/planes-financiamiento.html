@@ -130,7 +130,13 @@
   }
 
   @if (cargando()) {
-    <p class="py-10 text-center text-sm text-fg-muted">Cargando planes…</p>
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (i of [0, 1, 2]; track i) {
+        <div class="tarjeta p-6">
+          <app-esqueleto-lineas [lineas]="5" texto="Cargando planes…" />
+        </div>
+      }
+    </div>
   } @else {
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       @for (p of planes(); track p.id) {

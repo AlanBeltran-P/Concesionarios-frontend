@@ -25,11 +25,12 @@ import {
 import { Cotizacion, RespuestaCotizacion, Tasacion } from '../../model';
 import { CotizacionesService } from '../../services/cotizaciones.service';
 import { TasacionesCliente } from '../tasaciones-cliente/tasaciones-cliente';
+import { EsqueletoFicha } from '../../../../shared/ui/carga/esqueleto-ficha';
 
 /** Alta (/panel/cotizaciones/nueva) y ficha de una cotización (/panel/cotizaciones/:id). */
 @Component({
   selector: 'app-ficha-cotizacion',
-  imports: [RouterLink, Icono, Etiqueta, Buscador, TasacionesCliente],
+  imports: [EsqueletoFicha, RouterLink, Icono, Etiqueta, Buscador, TasacionesCliente],
   templateUrl: './ficha-cotizacion.html',
 })
 export class FichaCotizacion {

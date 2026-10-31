@@ -11,13 +11,14 @@ import { CondicionVehiculo, EstadoVehiculo, FiltroVehiculos, OrdenVehiculos } fr
 import { AuthService } from '../../../auth/services/auth.service';
 import { VehiculosService } from '../../services/vehiculos.service';
 import { EstadoBadge } from '../estado-badge/estado-badge';
+import { EsqueletoFilas } from '../../../../shared/ui/carga/esqueleto-filas';
 
 const POR_PAGINA = 12;
 
 /** Inventario para empleados: búsqueda, filtros, orden y paginado. */
 @Component({
   selector: 'app-listado-vehiculos',
-  imports: [RouterLink, Icono, EstadoBadge],
+  imports: [EsqueletoFilas, RouterLink, Icono, EstadoBadge],
   templateUrl: './listado-vehiculos.html',
 })
 export class ListadoVehiculos {

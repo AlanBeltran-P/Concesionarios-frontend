@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 import { Etiqueta } from '../../../../shared/ui/etiqueta/etiqueta';
 import { Icono } from '../../../../shared/ui/icono/icono';
 import { Paginado } from '../../../../shared/ui/paginado/paginado';
@@ -13,7 +14,7 @@ import { VentasService } from '../../services/ventas.service';
 /** Mis reservas (/cuenta/reservas). */
 @Component({
   selector: 'app-mis-reservas',
-  imports: [RouterLink, Etiqueta, Icono, Paginado],
+  imports: [EsqueletoLineas, RouterLink, Etiqueta, Icono, Paginado],
   template: `
     <section class="flex flex-col gap-4" aria-labelledby="t-reservas">
       <h2 id="t-reservas" class="sr-only">Mis reservas</h2>
@@ -64,20 +65,24 @@ import { VentasService } from '../../services/ventas.service';
           }
         </article>
       } @empty {
-        <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
-          @if (cargando()) {
-            <span class="text-fg-muted">Cargando…</span>
-          } @else if (!error()) {
-            <span class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted">
-              <app-icono nombre="calendario" class="size-6" />
-            </span>
-            <p class="font-medium">No tenés reservas</p>
-            <p class="max-w-sm text-sm text-fg-muted">
-              Desde la página de un vehículo podés reservarlo con una seña del {{ senaMinima }} % del precio.
-            </p>
-            <a routerLink="/" class="boton boton-primario">Ver el catálogo</a>
+        @if (cargando()) {
+          @for (i of [0, 1]; track i) {
+            <div class="tarjeta p-6"><app-esqueleto-lineas [lineas]="4" /></div>
           }
-        </div>
+        } @else {
+          <div class="tarjeta flex flex-col items-center gap-3 px-6 py-14 text-center">
+            @if (!error()) {
+              <span class="grid size-12 place-items-center rounded-full bg-subtle text-fg-muted">
+                <app-icono nombre="calendario" class="size-6" />
+              </span>
+              <p class="font-medium">No tenés reservas</p>
+              <p class="max-w-sm text-sm text-fg-muted">
+                Desde la página de un vehículo podés reservarlo con una seña del {{ senaMinima }} % del precio.
+              </p>
+              <a routerLink="/" class="boton boton-primario">Ver el catálogo</a>
+            }
+          </div>
+        }
       }
 
       <app-paginado [info]="datos()?.page" (cambiar)="pagina.set($event)" />

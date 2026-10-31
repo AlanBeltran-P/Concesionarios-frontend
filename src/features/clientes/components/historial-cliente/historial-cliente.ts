@@ -7,6 +7,7 @@ import { valorDe } from '../../../../shared/utils/recurso';
 import { ESTADO_FINANCIAMIENTO, MEDIO_PAGO, TIPO_PAGO } from '../../../financiamiento/logic';
 import { ESTADO_COTIZACION, ESTADO_RESERVA, ESTADO_VENTA, FORMA_PAGO } from '../../../ventas/logic';
 import { ClientesService } from '../../services/clientes.service';
+import { EsqueletoLineas } from '../../../../shared/ui/carga/esqueleto-lineas';
 
 type Seccion = 'compras' | 'financiamientos' | 'reservas' | 'cotizaciones' | 'pagos';
 
@@ -21,7 +22,7 @@ const SECCIONES: { seccion: Seccion; texto: string; vacio: string }[] = [
 /** Historial del cliente (RF-17): todo lo que hizo con la concesionaria. */
 @Component({
   selector: 'app-historial-cliente',
-  imports: [Etiqueta],
+  imports: [EsqueletoLineas, Etiqueta],
   templateUrl: './historial-cliente.html',
 })
 export class HistorialClienteComponent {

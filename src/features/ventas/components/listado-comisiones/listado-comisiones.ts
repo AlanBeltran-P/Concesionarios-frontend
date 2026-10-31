@@ -12,11 +12,12 @@ import { UsuariosService } from '../../../auth/services/usuarios.service';
 import { ESTADO_COMISION } from '../../logic';
 import { EstadoComision } from '../../model';
 import { ComisionesService } from '../../services/comisiones.service';
+import { EsqueletoFilas } from '../../../../shared/ui/carga/esqueleto-filas';
 
 /** Comisiones (RF-25): cada vendedor ve las suyas; el ADMIN ve todas y las marca como pagadas. */
 @Component({
   selector: 'app-listado-comisiones',
-  imports: [RouterLink, Etiqueta, Paginado],
+  imports: [EsqueletoFilas, RouterLink, Etiqueta, Paginado],
   templateUrl: './listado-comisiones.html',
 })
 export class ListadoComisiones {

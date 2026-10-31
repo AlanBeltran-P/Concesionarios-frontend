@@ -33,7 +33,7 @@
       </button>
     </div>
   } @else if (cargando() && !historial()) {
-    <p class="px-6 py-10 text-center text-sm text-fg-muted">Cargando historial…</p>
+    <div class="px-6 py-6"><app-esqueleto-lineas [lineas]="5" texto="Cargando historial…" /></div>
   } @else if (historial(); as h) {
     @for (aviso of h.avisos; track aviso) {
       <p class="mx-6 mt-4 rounded-md bg-warning-bg px-4 py-3 text-sm text-warning">{{ aviso }}</p>
